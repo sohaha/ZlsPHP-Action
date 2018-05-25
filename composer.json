@@ -1,0 +1,21 @@
+{
+    "name": "zls/action",
+    "description": "",
+    "type": "library",
+    "license": "MIT",
+  	"minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "影浅",
+            "email": "seekwe@gmail.com"
+        }
+    ],
+    "autoload":
+    {
+        "psr-4":
+        {
+            "Zls\\Action\\": "src/"
+        }
+    },
+    "require": {}
+}
