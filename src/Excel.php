@@ -1,5 +1,7 @@
 <?php
+
 namespace Zls\Action;
+
 /**
  * 导出数据为excel
  * @author 影浅-Seekwe
@@ -19,7 +21,7 @@ class Excel
         header('Expires:0');
         header('Pragma:public');
     }
-    
+
     public function exportCsv($data = [], $head = [], $fp = null)
     {
         if (!$fp) {
@@ -60,6 +62,7 @@ class Excel
                 }
             }
         }
+
         return $fp;
     }
 }

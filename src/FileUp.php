@@ -1,5 +1,9 @@
 <?php
+
 namespace Zls\Action;
+
+use Z;
+
 /**
  * FileUp
  * @author      影浅-Seekwe
@@ -7,11 +11,11 @@ namespace Zls\Action;
  * Date:        17/2/3
  * Time:        19:50
  */
-use Z;
 class FileUp
 {
     public $error = ['code' => '', 'info' => ''];
     private $size = 2048, $ext = ['jpg', 'png'], $file_formfield_name = 'file', $type = 'jpg', $save_name, $dir;
+
     /**
      * 设置表单文件域name名称
      * @param string $field_name
@@ -20,6 +24,7 @@ class FileUp
     {
         $this->file_formfield_name = $field_name;
     }
+
     /**
      * 设置文件最大大小，单位KB
      * @param int $s
@@ -28,6 +33,7 @@ class FileUp
     {
         $this->size = $s;
     }
+
     /**
      * 设置允许的文件拓展名列表，数组的形式，
      * 比如：array('jpg','bmp'),不区分大小写
@@ -37,6 +43,7 @@ class FileUp
     {
         $this->ext = $e;
     }
+
     public function saveFile($saveName = null, $dir = null)
     {
         $this->save_name = $saveName;
@@ -44,6 +51,7 @@ class FileUp
         $files = z::arrayGet($_FILES, $this->file_formfield_name);
         if (is_null($files)) {
             $this->setError(404, '请先上传文件');
+
             return false;
         }
         $tmpName = null;
@@ -66,7 +74,7 @@ class FileUp
                 } else {
                     return false;
                 }
-                $newSaveName[] = empty($saveName)&&$saveName!='0' ? $saveName . '_' . $k . '.' . $ext : null;
+                $newSaveName[] = empty($saveName) && $saveName != '0' ? $saveName . '_' . $k . '.' . $ext : null;
             }
         } else {
             $file = $files;
@@ -76,20 +84,25 @@ class FileUp
             } else {
                 return false;
             }
-            $newSaveName = empty($saveName)&&$saveName!='0'? null : $saveName . '.' . $ext;
+            $newSaveName = empty($saveName) && $saveName != '0' ? null : $saveName . '.' . $ext;
         }
+
         return $this->file($tmpName, $newSaveName);
     }
+
     private function setError($code, $info)
     {
         $this->error['code'] = $code;
         $this->error['error'] = $info;
     }
+
     public function getFileExt($file)
     {
         $fileExt = pathinfo(z::arrayGet($file, 'name', ''), PATHINFO_EXTENSION);
+
         return $fileExt ? strtolower($fileExt) : '';
     }
+
     public function checkFile($file)
     {
         $error_code = $file['error'];
@@ -103,6 +116,7 @@ class FileUp
                 6 => '文件写入到临时文件夹出错',
             ];
             $this->setError(500, isset($server_error[$error_code]) ? $server_error[$error_code] : '未知错误');
+
             return false;
         }
         if (!$this->checkExt($file)) {
@@ -111,8 +125,10 @@ class FileUp
         if (!$this->checkSize($file)) {
             return false;
         }
+
         return $file;
     }
+
     private function checkExt($file)
     {
         $ext = $this->ext;
@@ -122,10 +138,13 @@ class FileUp
         $fileExt = $this->getFileExt($file);
         if (!in_array($fileExt, $ext)) {
             $this->setError(402, '文件类型错误！只允许：' . implode(',', $ext));
+
             return false;
         }
+
         return true;
     }
+
     private function checkSize($file)
     {
         $max_size = $this->size;
@@ -134,10 +153,13 @@ class FileUp
             $this->setError(401,
                 '文件"' . $file['name'] . '"大小错误！最大：' . ($max_size < 1024 ? $max_size . 'KB' : sprintf('%.1f',
                         $max_size / 1024) . 'MB'));
+
             return false;
         }
+
         return true;
     }
+
     public function file($file, $saveName)
     {
         $dir = $this->dir;
@@ -163,9 +185,11 @@ class FileUp
                     $res[] = $save_name;
                 } else {
                     $this->setError(501, '移动临时文件到目标文件失败,请检查目标目录是否有写权限');
+
                     return false;
                 }
             }
+
             return $res;
         } else {
             $src_file = $file['tmp_name'];
@@ -187,30 +211,37 @@ class FileUp
                 return $saveName;//$this->truepath($save_name);
             } else {
                 $this->setError(501, '移动临时文件到目标文件失败,请检查目标目录是否有写权限');
+
                 return false;
             }
         }
     }
+
     public function getError()
     {
         return $this->error;
     }
+
     public function getErrorMsg()
     {
         return $this->error['error'];
     }
+
     public function getErrorCode()
     {
         return $this->error['code'];
     }
+
     public function getFileRawName()
     {
         return strtolower(pathinfo($_FILES[$this->file_formfield_name]['name'], PATHINFO_FILENAME));
     }
+
     public function getTmpFilePath()
     {
         return $_FILES[$this->file_formfield_name]['tmp_name'];
     }
+
     private function truepath($path)
     {
         //是linux系统么？
@@ -239,6 +270,7 @@ class FileUp
         $path = $unipath ? (strlen($path) && $path{0} != '/' ? '/' . $path : $path) : $path;
         //最后统一分隔符为/，windows兼容/
         $path = str_replace(['/', '\\'], '/', $path);
+
         return $path;
     }
 }

@@ -1,5 +1,9 @@
 <?php
+
 namespace Zls\Action;
+
+use Z;
+
 /**
  * Http操作封装类
  * @author        影浅-Seekwe
@@ -8,12 +12,12 @@ namespace Zls\Action;
  * @updatetime    2017-12-29 18:34:07
  * 需要php curl支持
  */
-use Z;
 class Http
 {
     private $responseInfo, $responseHeader, $responseBody, $ch, $lastUrl, $defineIp,
         $userAgent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.117 Safari/537.36',
         $referer, $error = ['code' => 0, 'msg' => ''], $sleep = 0, $responseHeaderMulti = [], $responseBodyMulti = [], $responseInfoMulti = [], $responseErrorMulti = [];
+
     public function __construct()
     {
         $this->ch = curl_init();
@@ -23,10 +27,12 @@ class Http
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, 0);
     }
+
     public function instance()
     {
         return $this->ch;
     }
+
     /**
      * 设置cookie文件存储路径
      * @param string $cookie_path cookie文件路径
@@ -49,8 +55,10 @@ class Http
             curl_setopt($this->ch, CURLOPT_COOKIEJAR, $cookie_path);
             curl_setopt($this->ch, CURLOPT_COOKIEFILE, $cookie_path);
         }
+
         return $this;
     }
+
     /**
      * 设置证书
      * @param      $certPath
@@ -67,6 +75,7 @@ class Http
             curl_setopt($this->ch, CURLOPT_SSLKEY, $keyPath);
         }
     }
+
     /**
      * 设置每次请求之后sleep的时间，单位毫秒
      * @param int $microSeconds
@@ -75,12 +84,15 @@ class Http
     public function sleep($microSeconds)
     {
         $this->sleep = $microSeconds;
+
         return $this;
     }
+
     public function userAgent($user_agent)
     {
         $this->userAgent = $user_agent;
     }
+
     /**
      * 设置ip
      * @param null $forwarded
@@ -96,6 +108,7 @@ class Http
         }
         $this->defineIp = ['X-FORWARDED-FOR:' . $forwarded, 'CLIENT-IP:' . $client];
     }
+
     public function ipRand()
     {
         $arr_1 = ["218", "218", "66", "66", "218", "218", "60", "60", "202", "204", "66", "66", "66", "59", "61", "60", "222", "221", "66", "59", "60", "60", "66", "218", "218", "62", "63", "64", "66", "66", "122", "211"];
@@ -104,8 +117,10 @@ class Http
         $ip2id = $arr_1[mt_rand(0, $count)];
         $ip3id = $arr_1[mt_rand(0, $count)];
         $ip4id = $arr_1[mt_rand(0, $count)];
+
         return $ip1id . "." . $ip2id . "." . $ip3id . "." . $ip4id;
     }
+
     public function proxy($ip, $port = 80, $username = '', $password = '')
     {
         curl_setopt($this->ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
@@ -115,6 +130,7 @@ class Http
             curl_setopt($this->ch, CURLOPT_PROXYUSERPWD, "{$username}:{$password}");
         }
     }
+
     /**
      * 使用GET方式请求一个页面
      * @param String     $url         页面地址
@@ -127,6 +143,7 @@ class Http
     {
         return $this->request('get', $url, $data, $header, $maxRedirect);
     }
+
     /**
      * 发送一个http请求
      * @param string $type
@@ -168,9 +185,9 @@ class Http
                                 $foundUpload = true;
                                 if (class_exists('CURLFile', false)) {
                                     $data[$k] = new \CURLFile($filepath);
-                                    $fileName = explode("/",$filepath);
+                                    $fileName = explode("/", $filepath);
                                     $fileName = array_pop($fileName);
-                                    $fileName = $fileName?:@basename($fileName);
+                                    $fileName = $fileName ?: @basename($fileName);
                                     if ($fileName) {
                                         $data[$k]->setPostFilename($fileName);
                                     }
@@ -217,6 +234,7 @@ class Http
                 $this->responseHeader = isset($info[0]) ? $info[0] : '';
                 $this->responseBody = isset($info[1]) ? $info[1] : '';
                 $this->responseInfo = curl_getinfo($ch);
+
                 //$this->reset();
                 return $this->responseBody;
             } else {
@@ -224,12 +242,15 @@ class Http
             }
         }
     }
+
     private function setError($error_code, $error_msg)
     {
         $this->error['code'] = $error_code;
         $this->error['msg'] = $error_msg;
+
         return $this;
     }
+
     /**
      * 带有重定向功能的exec
      * @param string $maxRedirect
@@ -243,6 +264,7 @@ class Http
             $content = curl_exec($this->ch);
             if (curl_errno($this->ch)) {
                 $this->setError(curl_errno($this->ch), curl_error($this->ch));
+
                 return false;
             } else {
                 return $content;
@@ -261,6 +283,7 @@ class Http
                 $this->responseInfo = curl_getinfo($this->ch);
                 if (!$this->isRedirect()) {
                     $this->setError(0, '');
+
                     return $data;
                 } else {
                     preg_match('/Location:(.*?)$/mi', $this->responseHeader, $matches);
@@ -269,12 +292,15 @@ class Http
                 }
             } else {
                 $this->setError(curl_errno($this->ch), curl_error($this->ch));
+
                 return false;
             }
         } while (++$loops <= $maxRedirect);
         $this->setError(1000, 'MAXREDIRS reached');
+
         return false;
     }
+
     /**
      * referer自动设置
      */
@@ -290,6 +316,7 @@ class Http
             curl_setopt($this->ch, CURLOPT_REFERER, $this->referer);
         }
     }
+
     /**
      * 每次请求完成后，进行一些清理
      */
@@ -298,6 +325,7 @@ class Http
         $this->referer = null;
         curl_setopt($this->ch, CURLOPT_COOKIE, null);
     }
+
     /**
      * 请求完成后，响应是否是重定向
      * @param null $code
@@ -308,8 +336,10 @@ class Http
         if (\is_null($code)) {
             $code = $this->code();
         }
+
         return in_array($code, [301, 302]);
     }
+
     /**
      * 请求完成后，获取返回的HTTP状态码
      * @return int
@@ -318,6 +348,7 @@ class Http
     {
         return isset($this->responseInfo['http_code']) ? $this->responseInfo['http_code'] : 0;
     }
+
     private function parseLocation($url)
     {
         $last_url = parse_url(curl_getinfo($this->ch, CURLINFO_EFFECTIVE_URL));
@@ -334,6 +365,7 @@ class Http
             }
         }
     }
+
     /**
      * 获取curl出错代码（大于零的数），如果没有错误，返回0
      * @return int
@@ -342,6 +374,7 @@ class Http
     {
         return $this->error['code'];
     }
+
     /**
      * 使用POST方式请求一个页面
      * @param String     $url         页面地址
@@ -355,6 +388,7 @@ class Http
     {
         return $this->request('post', $url, $data, $header, $maxRedirect, $atUpload);
     }
+
     /**
      * 设置当次请求使用的referer，当get或者post请求完毕后，referer会被重置为null
      * @param string $referer
@@ -363,8 +397,10 @@ class Http
     public function setReferer($referer)
     {
         $this->referer = $referer;
+
         return $this;
     }
+
     /**
      * 获取curl出错信息，返回数组：形如array('code'=>1000,'msg'=>'xxx'),如果没有错误，code是0
      * @return array
@@ -373,6 +409,7 @@ class Http
     {
         return $this->error;
     }
+
     /**
      * 获取curl出错字符串信息，如果没有错误，返回空
      * @return string
@@ -381,11 +418,14 @@ class Http
     {
         return $this->error['msg'];
     }
+
     public function setUserAgent($userAgent)
     {
         curl_setopt($this->ch, CURLOPT_USERAGENT, $userAgent);
+
         return $this;
     }
+
     /**
      * 设置请求超时时间，单位秒/毫秒
      * @param      $timeout
@@ -400,8 +440,10 @@ class Http
         } else {
             curl_setopt($this->ch, CURLOPT_CONNECTTIMEOUT_MS, (int)$timeout);
         }
+
         return $this;
     }
+
     /**
      * 获取请求返回的HTTP头部字符串
      * @return string
@@ -410,6 +452,7 @@ class Http
     {
         return $this->responseHeader;
     }
+
     /**
      * 获取请求返回的HTTP头部字符串
      * @return array
@@ -418,6 +461,7 @@ class Http
     {
         return $this->responseHeaderMulti;
     }
+
     /**
      * 获取请求返回的页面内容
      * @param bool $is_json 是否使用json_decode()解码一下,当返回数据是json的时候这个比较有用。默认false
@@ -427,6 +471,7 @@ class Http
     {
         return $is_json ? @json_decode($this->responseBody, true) : $this->responseBody;
     }
+
     /**
      * 请求完成后，获取请求相关信息，就是curl_getinfo()返回的信息数组
      * @return array
@@ -435,6 +480,7 @@ class Http
     {
         return $this->responseInfo;
     }
+
     /**
      * 请求完成后，响应是重定向的时候，这里会返回重定向的链接，如果不是重定向返回null
      * @return string
@@ -443,11 +489,13 @@ class Http
     {
         if ($this->isRedirect()) {
             preg_match('/Location:(.*?)$/mi', $this->responseHeader, $matches);
+
             return $this->parseLocation(trim(array_pop($matches)));
         } else {
             return null;
         }
     }
+
     /**
      * 请求完成后，获取最后一次请求的地址，这个往往是有重定向的时候使用的。
      * @return string
@@ -456,6 +504,7 @@ class Http
     {
         return $this->lastUrl;
     }
+
     /**
      * 设置curl句柄参数
      * @param string $opt curl_setopt()的第二个参数
@@ -465,8 +514,10 @@ class Http
     public function setOpt($opt, $val)
     {
         curl_setopt($this->ch, $opt, $val);
+
         return $this;
     }
+
     /**
      * 设置附加的cookie，这个不会影响自动管理的cookie
      * 1.每次请求完成后附加的cookie会被清空，自动管理的cookie不会受到影响。
@@ -492,12 +543,15 @@ class Http
         if (!empty($cookies)) {
             curl_setopt($this->ch, CURLOPT_COOKIE, implode(';', $cookies));
         }
+
         return $this;
     }
+
     public function multiError()
     {
         return $this->responseErrorMulti;
     }
+
     /**
      * 多线程请求完成后，获取请求相关信息
      * @return array
@@ -506,6 +560,7 @@ class Http
     {
         return $this->responseInfoMulti;
     }
+
     /**
      * 多线程请求
      * @param array $arrUrls
@@ -575,6 +630,7 @@ class Http
             } while (CURLM_CALL_MULTI_PERFORM == $mrc);
         }
         curl_multi_close($mh);
+
         return $arrResponses;
     }
 }
