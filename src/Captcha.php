@@ -20,14 +20,21 @@ use Z;
  */
 class Captcha
 {
-    private $width = 80, $height = 20, $codenum = 4
-    , $checkcode     //产生的验证码
-    , $checkimage    //验证码图片
-    , $session_flag = 'captcha_code' //存到session中的索引
-    , $font_path
-    , $codeMode = 'number'; //验证码组成：1.number 2.letter 3.both
+    private $width = 80;
+    private $height = 20;
+    private $codenum = 4
+    ;
+    private $checkcode     //产生的验证码
+    ;
+    private $checkimage    //验证码图片
+    ;
+    private $session_flag = 'captcha_code' //存到session中的索引
+    ;
+    private $font_path
+    ;
+    private $codeMode = 'number'; //验证码组成：1.number 2.letter 3.both
 
-    function __construct()
+    public function __construct()
     {
         Z::sessionStart();
         $this->font_path = z::tempPath() . '/' . md5('captchattf') . '.ttf';

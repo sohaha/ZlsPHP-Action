@@ -14,9 +14,20 @@ use Z;
  */
 class Http
 {
-    private $responseInfo, $responseHeader, $responseBody, $ch, $lastUrl, $defineIp,
-        $userAgent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.117 Safari/537.36',
-        $referer, $error = ['code' => 0, 'msg' => ''], $sleep = 0, $responseHeaderMulti = [], $responseBodyMulti = [], $responseInfoMulti = [], $responseErrorMulti = [];
+    private $responseInfo;
+    private $responseHeader;
+    private $responseBody;
+    private $ch;
+    private $lastUrl;
+    private $defineIp;
+    private $userAgent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.117 Safari/537.36';
+    private $referer;
+    private $error = ['code' => 0, 'msg' => ''];
+    private $sleep = 0;
+    private $responseHeaderMulti = [];
+    private $responseBodyMulti = [];
+    private $responseInfoMulti = [];
+    private $responseErrorMulti = [];
 
     public function __construct()
     {

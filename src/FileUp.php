@@ -14,7 +14,12 @@ use Z;
 class FileUp
 {
     public $error = ['code' => '', 'info' => ''];
-    private $size = 2048, $ext = ['jpg', 'png'], $file_formfield_name = 'file', $type = 'jpg', $save_name, $dir;
+    private $size = 2048;
+    private $ext = ['jpg', 'png'];
+    private $file_formfield_name = 'file';
+    private $type = 'jpg';
+    private $save_name;
+    private $dir;
 
     /**
      * 设置表单文件域name名称
@@ -39,7 +44,7 @@ class FileUp
      * 比如：array('jpg','bmp'),不区分大小写
      * @param array $e
      */
-    public function setExt(Array $e)
+    public function setExt(array $e)
     {
         $this->ext = $e;
     }
@@ -150,9 +155,13 @@ class FileUp
         $max_size = $this->size;
         $size_range = 1024 * $max_size;
         if ($file['size'] > $size_range || !$file['size']) {
-            $this->setError(401,
-                '文件"' . $file['name'] . '"大小错误！最大：' . ($max_size < 1024 ? $max_size . 'KB' : sprintf('%.1f',
-                        $max_size / 1024) . 'MB'));
+            $this->setError(
+                401,
+                '文件"' . $file['name'] . '"大小错误！最大：' . ($max_size < 1024 ? $max_size . 'KB' : sprintf(
+                    '%.1f',
+                        $max_size / 1024
+                ) . 'MB')
+            );
 
             return false;
         }

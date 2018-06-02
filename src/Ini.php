@@ -13,17 +13,30 @@ namespace Zls\Action;
  */
 class Ini
 {
-    function extended($content)
+    public function extended($content)
     {
         $config = [''];
         foreach ($content as $namespace => $properties) {
             $config[] = '[' . $namespace . ']';
-            foreach ($properties as $key => $value) {
-                $config[] = $key . ' = ' . $value;
-            }
+            $config[] = $this->valueHandle($properties);
             $config[] = '';
         }
 
         return join(PHP_EOL, $config);
+    }
+
+    private function valueHandle($values, $name = '')
+    {
+        $result = [];
+        foreach ($values as $key => $value) {
+            if (is_array($value)) {
+                $result[] = $this->valueHandle($value, $key);
+            } else {
+                $result[] = ($name ? $name . '[]' : $key) . ' = ' . (is_numeric($value) ? $value : "'{$value}'");
+            }
+        }
+        $result[] = '';
+
+        return join(PHP_EOL, $result);
     }
 }

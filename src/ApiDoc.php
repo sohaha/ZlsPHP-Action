@@ -27,7 +27,8 @@ class ApiDoc
         'enum'    => '枚举类型',
         'object'  => '对象',
         'json'    => 'json',
-    ], $REPETITION = [];
+    ];
+    private static $REPETITION = [];
 
     /**
      * @param bool $global
@@ -39,8 +40,11 @@ class ApiDoc
         $arr = [];
         $config = Z::config();
         $hmvcName = $config->getRoute()->gethmvcModuleName();
-        self::listDirApiPhp($config->getApplicationDir() . $config->getClassesDirName() . '/' . $config->getControllerDirName() . '/',
-            $arr, $hmvcName);
+        self::listDirApiPhp(
+            $config->getApplicationDir() . $config->getClassesDirName() . '/' . $config->getControllerDirName() . '/',
+            $arr,
+            $hmvcName
+        );
         $ret = [];
         foreach ($arr as $k => $class) {
             $_hmvc = $hmvc = $class['hmvc'];
@@ -78,8 +82,11 @@ class ApiDoc
                         if (z::strEndsWith($file, $Subfix)) {
                             $uri = explode('Controller/', $dir);
                             $arr[] = [
-                                'controller' => 'Controller_' . str_replace('/', '_', $uri[1]) . str_replace('.php', '',
-                                        $file),
+                                'controller' => 'Controller_' . str_replace('/', '_', $uri[1]) . str_replace(
+                                    '.php',
+                                    '',
+                                        $file
+                                ),
                                 'hmvc'       => $hmvc,
                             ];
                         }
@@ -258,8 +265,10 @@ class ApiDoc
         $rMethod = new \Reflectionmethod($controller, $method);
         $substrStart = $hmvcName ? 16 : 11;
         if ($hmvcName && z::config()->getCurrentDomainHmvcModuleNname()) {
-            $docInfo['url'] = (!$library) ? z::url('/' . str_replace('_', '/', substr($controller, $substrStart)) . '/' . substr($method,
-                    strlen(z::config()->getMethodPrefix())) . z::config()->getMethodUriSubfix()) : $method;
+            $docInfo['url'] = (!$library) ? z::url('/' . str_replace('_', '/', substr($controller, $substrStart)) . '/' . substr(
+                $method,
+                    strlen(z::config()->getMethodPrefix())
+            ) . z::config()->getMethodUriSubfix()) : $method;
         } else {
             $hmvcName = !!$hmvcName ? '/' . $hmvcName : '';
             $docInfo['url'] = (!$library) ? z::url($hmvcName . '/' . str_replace('_', '/', substr($controller, $substrStart)) . '/' . substr($method, strlen(z::config()->getMethodPrefix())) . z::config()->getMethodUriSubfix()) : $method;
