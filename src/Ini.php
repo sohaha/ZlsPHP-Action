@@ -1,7 +1,5 @@
 <?php
-
 namespace Zls\Action;
-
 /**
  * Ini文件操作
  * @author        影浅
@@ -21,10 +19,8 @@ class Ini
             $config[] = $this->valueHandle($properties);
             $config[] = '';
         }
-
         return join(PHP_EOL, $config);
     }
-
     private function valueHandle($values, $name = '')
     {
         $result = [];
@@ -36,7 +32,6 @@ class Ini
             }
         }
         $result[] = '';
-
         return join(PHP_EOL, $result);
     }
 }

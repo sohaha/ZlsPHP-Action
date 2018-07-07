@@ -1,9 +1,6 @@
 <?php
-
 namespace Zls\Action;
-
 use Z;
-
 /**
  * 图片缩放处理
  * @author        影浅
@@ -19,12 +16,10 @@ class Image
     private $imageinfo;
     private $image;
     private $imagecopy = 'imagecopyresampled';
-
     public function __construct($src = '')
     {
         $this->src = $src;
     }
-
     /**
      * @param string $src
      * @return \Zls\Action\Image
@@ -33,12 +28,10 @@ class Image
     {
         return new self($src);
     }
-
     public function setImagecopy($fast)
     {
         $this->imagecopy = $fast === true ? 'imagecopyresized' : $fast;
     }
-
     /**
      * 缩放图片
      * @param int  $width   宽度
@@ -75,10 +68,8 @@ class Image
                 Z::throwIf(true, 'Exception', 'Image size is invalid');
         }
         $this->copyImage($image, 0, 0, 0, 0, $newWidth, $newHeight, $this->imageinfo['width'], $this->imageinfo['height']);
-
         return $this;
     }
-
     /**
      * 打开图片
      */
@@ -100,10 +91,8 @@ class Image
             $image = $fun($this->src);
             $this->image = $image;
         }
-
         return $this->image;
     }
-
     public function imageFn($imagetype = 0, $ext = '', $prefix = 'imagecreatefrom')
     {
         $imageTypeToExtension = $imagetype ? image_type_to_extension($imagetype, false) : false;
@@ -119,10 +108,8 @@ class Image
         } else {
             $imageFn = $prefix . 'jpeg';
         }
-
         return $imageFn;
     }
-
     public function copyImage($image, $nx, $ny, $sx, $sy, $nw, $nh, $width, $height)
     {
         $newImg = imagecreatetruecolor($nw, $nh);
@@ -132,10 +119,8 @@ class Image
         $imagecopy($newImg, $image, $nx, $ny, $sx, $sy, $nw, $nh, $width, $height);
         imagesavealpha($newImg, true);
         $this->image = $newImg;
-
         return $newImg;
     }
-
     /**
      * 保存图片到硬盘
      * @param null   $filename 没有名字表示覆盖
@@ -149,7 +134,6 @@ class Image
         $newName = function ($filename = '') use ($fileinfo) {
             $newExt = $filename ? z::arrayGet(pathinfo($filename), 'extension') : '';
             $oldExt = z::arrayGet($fileinfo, 'extension');
-
             return $newExt ? $filename : $filename . '.' . $oldExt;
         };
         $dirname = z::arrayGet($fileinfo, 'dirname', '');
@@ -169,10 +153,8 @@ class Image
             default:
                 $newFile = $this->src;
         }
-
         return $this->show($newFile, $type);
     }
-
     /**
      * 输出图片
      * @param null   $newFile 是否保存文件
@@ -205,19 +187,15 @@ class Image
         if (!$newFile) {
             Z::header('Content-Type: image/' . $this->imageinfo['type']);
         }
-
         return z::tap($fun($image, $newFile), function () {
             $this->destruct();
         });
     }
-
     public function getInfo()
     {
         $this->getImage();
-
         return $this->imageinfo;
     }
-
     public function destruct()
     {
         if ($this->image) {
@@ -225,7 +203,6 @@ class Image
             $this->image = null;
         }
     }
-
     public function __destruct()
     {
         $this->destruct();

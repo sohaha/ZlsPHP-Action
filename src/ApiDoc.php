@@ -1,9 +1,6 @@
 <?php
-
 namespace Zls\Action;
-
 use Z;
-
 /**
  * 生成Api文档
  * @author        影浅-Seekwe
@@ -29,7 +26,6 @@ class ApiDoc
         'json'    => 'json',
     ];
     private static $REPETITION = [];
-
     /**
      * @param bool $global
      * @return array
@@ -61,10 +57,8 @@ class ApiDoc
             }
             $ret[$controller] = $data[0];
         }
-
         return $ret;
     }
-
     /**
      * @param        $dir
      * @param        $arr
@@ -96,7 +90,6 @@ class ApiDoc
             }
         }
     }
-
     /**
      * @param null   $controller
      * @param string $hmvcName
@@ -121,15 +114,12 @@ class ApiDoc
             }
             $methodArr[] = self::apiMethods($controller, $method, false, $hmvcName, $library);
         }
-
         return [['class' => $class, 'method' => $methodArr]];
     }
-
     public static function getClassName($className)
     {
         return (get_class(Z::factory($className)));
     }
-
     /**
      * @param      $className
      * @param null $access
@@ -172,10 +162,8 @@ class ApiDoc
                 }
             }
         }
-
         return $returnArr;
     }
-
     /**
      * 扫描class
      * @param  string $controller
@@ -223,10 +211,8 @@ class ApiDoc
             $docInfo['title'] = '{请检查函数注释}';
         }
         $docInfo['url'] = ($docInfo['hmvc'] === z::config()->getCurrentDomainHmvcModuleNname()) ? $docInfo['controller'] : $docInfo['hmvc'] . '/' . $docInfo['controller'];
-
         return $docInfo;
     }
-
     private static function getDocInfo($str, $key, $resultStr = true)
     {
         $keys = ["@{$key} ", "@api-{$key} "];
@@ -239,10 +225,8 @@ class ApiDoc
                 break;
             }
         }
-
         return $res;
     }
-
     /**
      * @param        $controller
      * @param null   $method
@@ -304,10 +288,8 @@ class ApiDoc
                 }
             }
         }
-
         return $docInfo;
     }
-
     private static function getParams($pos, $comment, $type = 'return')
     {
         $retArr = explode(' ', substr($comment, $pos + strlen($type)));
@@ -319,7 +301,6 @@ class ApiDoc
         $isReturn = Z::strEndsWith($type, 'return');
         if ($isReturn && ($retArr[0] == 'json' || $retArr[0] == 'object')) {
             $data = json_decode(implode(' ', array_slice($retArr, 1)), true);
-
             return !!$data ? implode(' ', array_slice($retArr, 1)) : false;
         }
         $retArr = array_merge(array_filter($retArr, function ($e) {
@@ -340,10 +321,8 @@ class ApiDoc
         }
         $ret['name'] = z::arrayGet($retArr, 1, '--');
         $ret['type'] = z::arrayGet(self::$TYPEMAPS, $retArr[0], $retArr[0]);
-
         return $ret;
     }
-
     public static function html($type = 'parent', $data)
     {
         echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>接口</title><meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css"><style>.panel-body,table{word-break:break-all}.w30{width:30%}h3,h4{margin:0}.alert-info{margin-top:10px;}</style></head><body><br/><div class="container" style="width:90%">';
@@ -407,7 +386,6 @@ DD;
         }
         echo '</div></body></html>';
     }
-
     public static function formatUrl($url, $args)
     {
         $args = \ltrim($args, '?');
@@ -416,10 +394,8 @@ DD;
         $query = z::arrayGet($parse, 'query', '');
         $query = ($query ? $query . '&' . $args : $args);
         $newUrl = $path . ($query ? '?' . $query : '');
-
         return $newUrl;
     }
-
     public static function formatJson($json = '')
     {
         $result = '';
@@ -454,7 +430,6 @@ DD;
             }
             $prevChar = $char;
         }
-
         return $result;
     }
 }

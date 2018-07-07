@@ -1,9 +1,6 @@
 <?php
-
 namespace Zls\Action;
-
 use Z;
-
 /**
  * 验证规则
  * @author        影浅
@@ -22,7 +19,6 @@ class CheckRules
                 if (empty($value)) {
                     $returnValue = $args[0];
                 }
-
                 return true;
             },
             'array'           => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -37,7 +33,6 @@ class CheckRules
                 if (Z::arrayKeyExists(1, $args)) {
                     $minOkay = count($value) >= intval($args[1]);
                 }
-
                 return $minOkay && $maxOkay;
             },
             'notArray'        => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -53,12 +48,10 @@ class CheckRules
                 } elseif (empty($value)) {
                     $returnValue = $args[0];
                 }
-
                 return true;
             },
             'optional'        => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
                 $break = empty($data[$key]);
-
                 return true;
             },
             'required'        => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -71,7 +64,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'requiredKey'     => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -82,7 +74,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'functions'       => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -101,7 +92,6 @@ class CheckRules
                         $returnValue = $function($returnValue);
                     }
                 }
-
                 return true;
             },
             'xss'             => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -109,7 +99,6 @@ class CheckRules
                     return true;
                 }
                 $returnValue = Z::xssClean($value);
-
                 return true;
             },
             'match'           => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -120,14 +109,12 @@ class CheckRules
                 ) {
                     return false;
                 }
-
                 return true;
             },
             'equal'           => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
                 if (!Z::arrayKeyExists($key, $data) || !Z::arrayKeyExists(0, $args) || $value != $args[0]) {
                     return false;
                 }
-
                 return true;
             },
             'enum'            => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -140,7 +127,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'unique'          => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -166,7 +152,6 @@ class CheckRules
                 } else {
                     $where = [$col => $value];
                 }
-
                 return !$db->where($where)->from($table)->limit(0, 1)->execute()->total();
             },
             'exists'          => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -193,7 +178,6 @@ class CheckRules
                         $where[$id_col] = $id;
                     }
                 }
-
                 return $db->where($where)->from($table)->limit(0, 1)->execute()->total();
             },
             'min_len'         => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -207,7 +191,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'max_len'         => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -221,7 +204,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'range_len'       => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -241,7 +223,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'len'             => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -255,7 +236,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'min'             => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -269,7 +249,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'max'             => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -283,7 +262,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'range'           => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -297,7 +275,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'alpha'           => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -312,7 +289,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'alpha_num'       => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -327,7 +303,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'alpha_dash'      => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -342,7 +317,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'alpha_start'     => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -357,7 +331,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'num'             => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -372,7 +345,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'int'             => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -387,7 +359,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'float'           => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -402,7 +373,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'numeric'         => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -417,7 +387,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'natural'         => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -432,7 +401,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'natural_no_zero' => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -447,7 +415,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'email'           => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -465,7 +432,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'url'             => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -483,7 +449,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'qq'              => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -498,7 +463,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'phone'           => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -513,7 +477,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'mobile'          => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -531,7 +494,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'zipcode'         => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -546,7 +508,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'idcard'          => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -561,7 +522,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'ip'              => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -579,7 +539,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'chs'             => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -599,7 +558,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'date'            => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -617,7 +575,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'time'            => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -635,7 +592,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'datetime'        => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -653,7 +609,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
             'reg'             => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -667,7 +622,6 @@ class CheckRules
                         return false;
                     }
                 }
-
                 return true;
             },
         ];

@@ -6,10 +6,10 @@ use Z;
 
 /**
  * Http操作封装类
- * @author        影浅-Seekwe
- * @email       seekwe@gmail.com
+ * @author        影浅
+ * @email         seekwe@gmail.com
  * @since         v2.0.15
- * @updatetime    2017-12-29 18:34:07
+ * @updatetime    2018-7-7 18:40:05
  * 需要php curl支持
  */
 class Http
@@ -397,7 +397,7 @@ class Http
      */
     public function post($url, $data = null, array $header = null, $maxRedirect = 0, $atUpload = false)
     {
-        return $this->request('post', $url, $data, $header, $maxRedirect, $atUpload);
+        return $this->request('post', $url, $data, $header, $maxRedirect, null, true, $atUpload);
     }
 
     /**
