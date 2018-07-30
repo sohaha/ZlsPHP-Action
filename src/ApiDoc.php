@@ -1,13 +1,16 @@
 <?php
+
 namespace Zls\Action;
+
 use Z;
+
 /**
  * 生成Api文档
  * @author        影浅-Seekwe
  * @email         seekwe@gmail.com
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
  * @since         v1.1.0
- * @updatetime    2018-3-8 16:03:07
+ * @updatetime    2018-7-30 13:56:30
  */
 class ApiDoc
 {
@@ -26,6 +29,7 @@ class ApiDoc
         'json'    => 'json',
     ];
     private static $REPETITION = [];
+
     /**
      * @param bool $global
      * @return array
@@ -57,8 +61,10 @@ class ApiDoc
             }
             $ret[$controller] = $data[0];
         }
+
         return $ret;
     }
+
     /**
      * @param        $dir
      * @param        $arr
@@ -77,10 +83,10 @@ class ApiDoc
                             $uri = explode('Controller/', $dir);
                             $arr[] = [
                                 'controller' => 'Controller_' . str_replace('/', '_', $uri[1]) . str_replace(
-                                    '.php',
-                                    '',
+                                        '.php',
+                                        '',
                                         $file
-                                ),
+                                    ),
                                 'hmvc'       => $hmvc,
                             ];
                         }
@@ -90,6 +96,7 @@ class ApiDoc
             }
         }
     }
+
     /**
      * @param null   $controller
      * @param string $hmvcName
@@ -114,12 +121,15 @@ class ApiDoc
             }
             $methodArr[] = self::apiMethods($controller, $method, false, $hmvcName, $library);
         }
+
         return [['class' => $class, 'method' => $methodArr]];
     }
+
     public static function getClassName($className)
     {
         return (get_class(Z::factory($className)));
     }
+
     /**
      * @param      $className
      * @param null $access
@@ -162,8 +172,10 @@ class ApiDoc
                 }
             }
         }
+
         return $returnArr;
     }
+
     /**
      * 扫描class
      * @param  string $controller
@@ -211,8 +223,10 @@ class ApiDoc
             $docInfo['title'] = '{请检查函数注释}';
         }
         $docInfo['url'] = ($docInfo['hmvc'] === z::config()->getCurrentDomainHmvcModuleNname()) ? $docInfo['controller'] : $docInfo['hmvc'] . '/' . $docInfo['controller'];
+
         return $docInfo;
     }
+
     private static function getDocInfo($str, $key, $resultStr = true)
     {
         $keys = ["@{$key} ", "@api-{$key} "];
@@ -225,8 +239,10 @@ class ApiDoc
                 break;
             }
         }
+
         return $res;
     }
+
     /**
      * @param        $controller
      * @param null   $method
@@ -250,9 +266,9 @@ class ApiDoc
         $substrStart = $hmvcName ? 16 : 11;
         if ($hmvcName && z::config()->getCurrentDomainHmvcModuleNname()) {
             $docInfo['url'] = (!$library) ? z::url('/' . str_replace('_', '/', substr($controller, $substrStart)) . '/' . substr(
-                $method,
+                    $method,
                     strlen(z::config()->getMethodPrefix())
-            ) . z::config()->getMethodUriSubfix()) : $method;
+                ) . z::config()->getMethodUriSubfix()) : $method;
         } else {
             $hmvcName = !!$hmvcName ? '/' . $hmvcName : '';
             $docInfo['url'] = (!$library) ? z::url($hmvcName . '/' . str_replace('_', '/', substr($controller, $substrStart)) . '/' . substr($method, strlen(z::config()->getMethodPrefix())) . z::config()->getMethodUriSubfix()) : $method;
@@ -288,12 +304,16 @@ class ApiDoc
                 }
             }
         }
+
         return $docInfo;
     }
+
     private static function getParams($pos, $comment, $type = 'return')
     {
         $retArr = explode(' ', substr($comment, $pos + strlen($type)));
-        $retArr = array_values(array_filter($retArr));
+        $retArr = array_values(array_filter($retArr, function ($v) {
+            return $v !== "";
+        }));
         $count = count($retArr);
         if ($count < 2) {
             return false;
@@ -301,6 +321,7 @@ class ApiDoc
         $isReturn = Z::strEndsWith($type, 'return');
         if ($isReturn && ($retArr[0] == 'json' || $retArr[0] == 'object')) {
             $data = json_decode(implode(' ', array_slice($retArr, 1)), true);
+
             return !!$data ? implode(' ', array_slice($retArr, 1)) : false;
         }
         $retArr = array_merge(array_filter($retArr, function ($e) {
@@ -321,11 +342,13 @@ class ApiDoc
         }
         $ret['name'] = z::arrayGet($retArr, 1, '--');
         $ret['type'] = z::arrayGet(self::$TYPEMAPS, $retArr[0], $retArr[0]);
+
         return $ret;
     }
+
     public static function html($type = 'parent', $data)
     {
-        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>接口</title><meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css"><style>.panel-body,table{word-break:break-all}.w30{width:30%}h3,h4{margin:0}.alert-info{margin-top:10px;}</style></head><body><br/><div class="container" style="width:90%">';
+        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>接口</title><meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css"><style>.panel-body,table{word-break:break-all}.w30{width:30%}.alert-info{margin-top:10px;}</style></head><body><br/><div class="container" style="width:90%">';
         if (!!$data) {
             if ($type == 'self') {
                 $updateTime = z::arrayGet($data, 'time', '--');
@@ -386,6 +409,7 @@ DD;
         }
         echo '</div></body></html>';
     }
+
     public static function formatUrl($url, $args)
     {
         $args = \ltrim($args, '?');
@@ -394,14 +418,16 @@ DD;
         $query = z::arrayGet($parse, 'query', '');
         $query = ($query ? $query . '&' . $args : $args);
         $newUrl = $path . ($query ? '?' . $query : '');
+
         return $newUrl;
     }
+
     public static function formatJson($json = '')
     {
         $result = '';
         $pos = 0;
         $strLen = strlen($json);
-        $indentStr = '&nbsp;';
+        $indentStr = '&emsp;';
         $newLine = "<br>";
         $prevChar = '';
         $outOfQuotes = true;
@@ -430,6 +456,7 @@ DD;
             }
             $prevChar = $char;
         }
+
         return $result;
     }
 }
