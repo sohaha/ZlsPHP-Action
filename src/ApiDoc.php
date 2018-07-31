@@ -355,7 +355,7 @@ class ApiDoc
                 $_host = z::host();
                 $url = self::formatUrl($data['url'], '');
                 echo <<<DD
-<div class="page-header"><h2>{$data['title']}<h4>{$data['desc']}</h4><h5>更新时间 {$updateTime}</h5><h5><a target="_blank" href="{$url}"><button type="button" class="btn btn-primary btn-xs">GET</button></a> <a target="_blank" href="{$url}">
+<div class="page-header"><h2>{$data['title']}<h4>{$data['desc']}</h4><h5>更新时间 {$updateTime}</h5><h5><a target="_blank" href="{$url}"><button type="button" class="btn btn-primary btn-xs">TARGET</button></a> <a target="_blank" href="{$url}">
 {$_host}{$url}</a></h5></h2></div><h3>请求参数</h3><table class="table table-striped table-bordered" >
 <thead>
 DD;
@@ -398,7 +398,7 @@ DD;
                         $updateTime = z::arrayGet($v, 'time', '--');
                         $url = self::formatUrl($v['url'], '?_api=self' . $token);
                         $url .= ($class['class']['key']) ? '&_key=' . $class['class']['key'] : '';
-                        echo '<tr><td><a href="' . $v['url'] . '" target="_blank"><button type="button" class="btn btn-primary btn-xs">GET</button></a> <a href="' . $url . '" target="_blank"><button type="button" class="btn btn-success btn-xs">INFO</button>  ' . $v['url'] . '</a></td><td>' . $v['title'] . '</td><td>' . $updateTime . '</td><td>' . $v['desc'] . '</td></tr>';
+                        echo '<tr><td><a href="' . $v['url'] . '" target="_blank"><button type="button" class="btn btn-primary btn-xs">TARGET</button></a> <a href="' . $url . '" target="_blank"><button type="button" class="btn btn-success btn-xs">INFO</button>  ' . $v['url'] . '</a></td><td>' . $v['title'] . '</td><td>' . $updateTime . '</td><td>' . $v['desc'] . '</td></tr>';
                     }
                     echo '</tbody></table>';
                 }
