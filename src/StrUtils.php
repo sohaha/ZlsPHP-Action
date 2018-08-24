@@ -3,11 +3,14 @@
 namespace Zls\Action;
 
 /**
- * Zls\Action\StrUtils
+ * Zls\Action\StrUtils.
+ *
  * @author        影浅
  * @email         seekwe@gmail.com
+ *
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- * @link          ---
+ *
+ * @see          ---
  * @since         v0.0.1
  * @updatetime    2018-07-13 11:55
  */
@@ -15,13 +18,15 @@ class StrUtils
 {
     /**
      * uniqueId
-     * 生成16位以上唯一ID
+     * 生成16位以上唯一ID.
+     *
      * @param int    $length 不含前后缀的长度，最小14，建议16+
      * @param string $prefix 前缀
      * @param string $subfix 后缀
+     *
      * @return string $id
      */
-    function uniqueId($prefix = '', $subfix = '', $length = 16)
+    public function uniqueId($prefix = '', $subfix = '', $length = 16)
     {
         if ($length < 14) {
             $length = 14;
@@ -44,39 +49,41 @@ class StrUtils
             $id .= $mtRand();
         }
 
-        return $id . $subfix;
+        return $id.$subfix;
     }
 
     /**
-     * 加星号
+     * 加星号.
+     *
      * @param        $str
      * @param int    $start
      * @param int    $end
      * @param string $dot
      * @param string $charset
+     *
      * @return string
      */
-    public function stringStar($str, $start = 1, $end = 0, $dot = "*", $charset = "UTF-8")
+    public function stringStar($str, $start = 1, $end = 0, $dot = '*', $charset = 'UTF-8')
     {
         $len = mb_strlen($str, $charset);
-        if ($start == 0 || $start > $len) {
+        if (0 == $start || $start > $len) {
             $start = 1;
         }
-        if ($end != 0 && $end > $len) {
+        if (0 != $end && $end > $len) {
             $end = $len - 2;
         } elseif ($end == $len - 1) {
             $end = 0;
         }
         $endStart = $len - $end;
         $top = mb_substr($str, 0, $start, $charset);
-        $bottom = "";
+        $bottom = '';
         if ($endStart > 0) {
             $bottom = mb_substr($str, $endStart, $end, $charset);
         }
         $len = $len - mb_strlen($top, $charset);
         $len = $len - mb_strlen($bottom, $charset);
         $newStr = $top;
-        for ($i = 0; $i < $len; $i++) {
+        for ($i = 0; $i < $len; ++$i) {
             $newStr .= $dot;
         }
         $newStr .= $bottom;
@@ -85,25 +92,28 @@ class StrUtils
     }
 
     /**
-     * 随机OPENID
+     * 随机OPENID.
+     *
      * @return string
      */
     public function openid()
     {
-        return 'o7nWYj' . $this->randString(22, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_');
+        return 'o7nWYj'.$this->randString(22, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_');
     }
 
     /**
-     * 产生随机字符串
+     * 产生随机字符串.
+     *
      * @param int    $length
      * @param string $chars
+     *
      * @return string
      */
     public function randString($length = 4, $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_ []{}<>~`+=,.;:/?|')
     {
         $hash = '';
         $max = strlen($chars) - 1;
-        for ($i = 0; $i < $length; $i++) {
+        for ($i = 0; $i < $length; ++$i) {
             $hash .= $chars[mt_rand(0, $max)];
         }
 
@@ -111,8 +121,10 @@ class StrUtils
     }
 
     /**
-     * 取汉字的第一个字的首字母
+     * 取汉字的第一个字的首字母.
+     *
      * @param $str
+     *
      * @return null|string
      */
     public function firstCharter($str)
@@ -120,14 +132,14 @@ class StrUtils
         if (empty($str)) {
             return '';
         }
-        $fchar = ord($str{0});
+        $fchar = ord($str[0]);
         if ($fchar >= ord('A') && $fchar <= ord('z')) {
-            return strtoupper($str{0});
+            return strtoupper($str[0]);
         }
         $s1 = iconv('UTF-8', 'gb2312', $str);
         $s2 = iconv('gb2312', 'UTF-8', $s1);
         $s = $s2 == $str ? $s1 : $str;
-        $asc = ord($s{0}) * 256 + ord($s{1}) - 65536;
+        $asc = ord($s[0]) * 256 + ord($s[1]) - 65536;
         if ($asc >= -20319 && $asc <= -20284) {
             return 'A';
         }

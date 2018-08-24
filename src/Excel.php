@@ -1,10 +1,15 @@
 <?php
+
 namespace Zls\Action;
+
 use Z;
+
 /**
- * 导出数据为excel
+ * 导出数据为excel.
+ *
  * @author 影浅-Seekwe
- * @link   seekwe@gmail.com
+ *
+ * @see   seekwe@gmail.com
  * @since  0.0.1
  */
 class Excel
@@ -16,19 +21,20 @@ class Excel
         }
         $filename = trim(strtolower($filename));
         if (!Z::strEndsWith($filename, '.csv')) {
-            $filename = $filename . '.csv';
+            $filename = $filename.'.csv';
         }
-        Z::header("Content-type:text/csv");
-        Z::header("Content-Disposition:attachment;filename=" . $filename);
+        Z::header('Content-type:text/csv');
+        Z::header('Content-Disposition:attachment;filename='.$filename);
         Z::header('Cache-Control:must-revalidate,post-check=0,pre-check=0');
         Z::header('Expires:0');
         Z::header('Pragma:public');
     }
+
     public function exportCsv($data = [], $head = [], $fp = null)
     {
         if (!$fp) {
             $fp = fopen('php://output', 'a');
-            fprintf($fp, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($fp, chr(0xEF).chr(0xBB).chr(0xBF));
         }
         if (!$head && !$data) {
             fclose($fp);
@@ -43,8 +49,8 @@ class Excel
                 $cnt = 0;
                 $limit = 100000;
                 $count = count($data);
-                for ($t = 0; $t < $count; $t++) {
-                    $cnt++;
+                for ($t = 0; $t < $count; ++$t) {
+                    ++$cnt;
                     if ($limit == $cnt) {
                         ob_flush();
                         flush();
@@ -54,6 +60,7 @@ class Excel
                 }
             }
         }
+
         return $fp;
     }
 }
