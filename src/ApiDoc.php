@@ -46,7 +46,7 @@ class ApiDoc
         $config = Z::config();
         $hmvcName = $config->getRoute()->gethmvcModuleName();
         self::listDirApiPhp(
-            $config->getApplicationDir().$config->getClassesDirName().'/'.$config->getControllerDirName().'/',
+            $config->getAppDir().$config->getClassesDirName().'/'.$config->getControllerDirName().'/',
             $arr,
             $hmvcName
         );
