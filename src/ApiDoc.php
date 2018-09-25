@@ -6,38 +6,34 @@ use Z;
 
 /**
  * 生成Api文档.
- *
  * @author        影浅-Seekwe
  * @email         seekwe@gmail.com
- *
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- *
  * @since         v1.1.0
  * @updatetime    2018-7-30 13:56:30
  */
 class ApiDoc
 {
-    private static $TYPEMAPS = [
-        'string' => '字符串',
-        'phone' => '手机号码',
-        'eamil' => '电子邮箱',
-        'int' => '整型',
-        'float' => '浮点型',
-        'boolean' => '布尔型',
-        'date' => '日期',
-        'array' => '数组',
-        'fixed' => '固定值',
-        'enum' => '枚举类型',
-        'object' => '对象',
-        'json' => 'json',
-    ];
+    private static $TYPEMAPS
+                               = [
+            'string' => '字符串',
+            'phone' => '手机号码',
+            'eamil' => '电子邮箱',
+            'int' => '整型',
+            'float' => '浮点型',
+            'boolean' => '布尔型',
+            'date' => '日期',
+            'array' => '数组',
+            'fixed' => '固定值',
+            'enum' => '枚举类型',
+            'object' => '对象',
+            'json' => 'json',
+        ];
     private static $REPETITION = [];
 
     /**
      * @param bool $global
-     *
      * @return array
-     *
      * @throws \ReflectionException
      */
     public static function all($global = false)
@@ -53,7 +49,7 @@ class ApiDoc
         $ret = [];
         foreach ($arr as $k => $class) {
             $_hmvc = $hmvc = $class['hmvc'];
-            if ((bool) $hmvc) {
+            if ((bool)$hmvc) {
                 $class['controller'] = 'Hmvc_'.$class['controller'];
             }
             $controller = $class['controller'];
@@ -106,9 +102,7 @@ class ApiDoc
      * @param null   $controller
      * @param string $hmvcName
      * @param bool   $library
-     *
      * @return array|bool
-     *
      * @throws \ReflectionException
      */
     public static function docComment($controller = null, $hmvcName = '', $library = false)
@@ -140,9 +134,7 @@ class ApiDoc
     /**
      * @param      $className
      * @param null $access
-     *
      * @return array
-     *
      * @throws \ReflectionException
      */
     public static function getMethods($className, $access = null)
@@ -187,13 +179,10 @@ class ApiDoc
 
     /**
      * 扫描class.
-     *
      * @param string $controller
      * @param string $setKey
      * @param string $hmvc
-     *
      * @return array|bool
-     *
      * @throws \ReflectionException
      */
     private static function apiClass($controller, $setKey = null, $hmvc = '')
@@ -209,7 +198,7 @@ class ApiDoc
             'desc' => null,
             'url' => '',
             'hmvc' => $hmvc,
-            'controller' => str_replace('_', '/', substr($controller, (bool) $hmvc ? 16 : 11)),
+            'controller' => str_replace('_', '/', substr($controller, (bool)$hmvc ? 16 : 11)),
             'repetition' => [],
         ];
         $docInfo['controller'] = str_replace('\\', '/', $docInfo['controller']);
@@ -261,9 +250,7 @@ class ApiDoc
      * @param bool   $paramsStatus
      * @param string $hmvcName
      * @param bool   $library
-     *
      * @return bool
-     *
      * @throws \ReflectionException
      */
     public static function apiMethods(
@@ -280,11 +267,11 @@ class ApiDoc
         $substrStart = $hmvcName ? 16 : 11;
         if ($hmvcName && z::config()->getCurrentDomainHmvcModuleNname()) {
             $docInfo['url'] = (!$library) ? z::url('/'.str_replace('_', '/', substr($controller, $substrStart)).'/'.substr(
-                    $method,
-                    strlen(z::config()->getMethodPrefix())
-                ).z::config()->getMethodUriSubfix()) : $method;
+                                                       $method,
+                                                       strlen(z::config()->getMethodPrefix())
+                                                   ).z::config()->getMethodUriSubfix()) : $method;
         } else {
-            $hmvcName = (bool) $hmvcName ? '/'.$hmvcName : '';
+            $hmvcName = (bool)$hmvcName ? '/'.$hmvcName : '';
             $docInfo['url'] = (!$library) ? z::url($hmvcName.'/'.str_replace('_', '/', substr($controller, $substrStart)).'/'.substr($method, strlen(z::config()->getMethodPrefix())).z::config()->getMethodUriSubfix()) : $method;
         }
         $docInfo['url'] = str_replace('\\', '/', $docInfo['url']);
@@ -306,7 +293,7 @@ class ApiDoc
                     $docInfo['time'] = trim($desc);
                     continue;
                 }
-                if ((bool) $paramsStatus) {
+                if ((bool)$paramsStatus) {
                     if ($return = self::getDocInfo($comment, 'return', false)) {
                         $docInfo['return'][] = self::getParams($return[1], $comment, $return[0]);
                         continue;
@@ -336,7 +323,7 @@ class ApiDoc
         if ($isReturn && ('json' == $retArr[0] || 'object' == $retArr[0])) {
             $data = json_decode(implode(' ', array_slice($retArr, 1)), true);
 
-            return (bool) $data ? implode(' ', array_slice($retArr, 1)) : false;
+            return (bool)$data ? implode(' ', array_slice($retArr, 1)) : false;
         }
         $retArr = array_merge(array_filter($retArr, function ($e) {
             return '' == $e ? false : true;
@@ -348,7 +335,12 @@ class ApiDoc
         } else {
             $ret['title'] = z::arrayGet($retArr, 2, '--');
             $query = strtoupper(trim(z::arrayGet($retArr, 3)));
-            $ret['query'] = ('P' == $query) ? 'POST' : (('G' == $query || !$query) ? 'GET' : $query);
+            $query = z::arrayMap(explode('|', $query), function ($query) {
+                $query = trim($query);
+
+                return ('P' == $query) ? 'POST' : (('G' == $query || !$query) ? 'GET' : $query);
+            });
+            $ret['query'] = join('|', $query);
             $default = z::arrayGet($retArr, 4, '');
             $ret['default'] = ('""' === $default || '\'\'' === $default) ? '' : $default;
             $ret['is'] = ('N' == strtoupper(trim(z::arrayGet($retArr, 5)))) ? '否' : '是';
@@ -360,23 +352,36 @@ class ApiDoc
         return $ret;
     }
 
+    /**
+     * @param string $type
+     * @param        $data
+     */
     public static function html($type = 'parent', $data)
     {
         echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>接口</title><meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css"><style>.panel-body,table{word-break:break-all}.w30{width:30%}.alert-info{margin-top:10px;}</style></head><body><br/><div class="container" style="width:90%">';
-        if ((bool) $data) {
+        if ((bool)$data) {
             if ('self' == $type) {
-                $updateTime = z::arrayGet($data, 'time', '--');
+                $updateTime = z::arrayGet($data, 'time', '');
+                $updateTime = $updateTime ? "<h5>更新时间 {$updateTime}</h5>" : '';
                 $_host = z::host();
                 $url = self::formatUrl($data['url'], '');
                 echo <<<DD
-<div class="page-header"><h2>{$data['title']}<h4>{$data['desc']}</h4><h5>更新时间 {$updateTime}</h5><h5><a target="_blank" href="{$url}"><button type="button" class="btn btn-primary btn-xs">TARGET</button></a> <a target="_blank" href="{$url}">
+<div class="page-header"><h2>{$data['title']}<h4>{$data['desc']}</h4>{$updateTime}<h5><a target="_blank" href="{$url}"><button type="button" class="btn btn-primary btn-xs">TARGET</button></a> <a target="_blank" href="{$url}">
 {$_host}{$url}</a></h5></h2></div><h3>请求参数</h3><table class="table table-striped table-bordered" >
 <thead>
 DD;
                 if (count($data['param']) > 0) {
                     echo '<tr><th>参数名</th><th>请求方式</th><th>说明</th><th>类型</th><th>默认</th><th>必填</th><th class="w30">备注</th></tr>';
                     foreach ($data['param'] as $param) {
-                        echo '<tr><td>'.$param['name'].'</td><td>'.$param['query'].'</td><td>'.$param['title'].'</td><td>'.$param['type'].'</td><td>'.$param['default'].'</td><td>'.$param['is'].'</td><td>'.$param['desc'].'</td></tr>';
+                        $query = explode('|', $param['query']);
+                        $queryType = z::arrayMap($query, function ($v) {
+                            $v = strtoupper(trim($v));
+                            $queryTypeTitle = $v === 'POST' ? 'form-data' : strtolower($v);
+
+                            return "<button type='button' class='btn btn-xs btn-info' title='{$queryTypeTitle}'>{$v}</button>";
+                        });
+                        $queryType = join(' ', $queryType);
+                        echo '<tr><td>'.$param['name'].'</td><td>'.$queryType.'</td><td>'.$param['title'].'</td><td>'.$param['type'].'</td><td>'.$param['default'].'</td><td>'.$param['is'].'</td><td>'.$param['desc'].'</td></tr>';
                     }
                 }
                 echo '</table><h3>返回示例</h3>';
@@ -384,17 +389,17 @@ DD;
                 foreach ($data['return'] as $return) {
                     if (is_string($return)) {
                         $returnJson .= '<div class="text-muted panel panel-default"><div class="bg-warning panel-body">'.self::formatJson($return).'</div></div>';
-                    } elseif ((bool) $return) {
+                    } elseif ((bool)$return) {
                         $returnHtml .= '<tr><td>'.$return['name'].'</td><td>'.$return['type'].'</td><td>'.$return['title'].'</td><td>'.$return['desc'].'</td></tr>';
                     }
                 }
-                if ((bool) $returnHtml) {
+                if ((bool)$returnHtml) {
                     echo '<table class="table table-striped table-bordered"><thead><tr><th>字段</th><th>类型</th><th class="w30">说明</th><th class="w30">备注</th></tr>'.$returnHtml.'</table>';
                 }
                 echo $returnJson;
                 echo '<div role="alert" class="alert alert-info"><strong>温馨提示：</strong> 此接口参数列表根据后台代码自动生成，可将 xxx?_api=self 改成您需要查询的接口</div>';
             } else {
-                $token = ((bool) $token = z::get('_token', '', true)) ? '&_token='.$token : '';
+                $token = ((bool)$token = z::get('_token', '', true)) ? '&_token='.$token : '';
                 foreach ($data as $class) {
                     if (!z::arrayGet($class, 'class.controller')) {
                         continue;
