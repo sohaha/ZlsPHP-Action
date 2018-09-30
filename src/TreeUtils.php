@@ -4,26 +4,21 @@ namespace Zls\Action;
 
 /**
  * Tree.
- *
  * @author        影浅
  * @email         seekwe@gmail.com
- *
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- *
- * @see          ---
+ * @see           ---
  * @since         v0.0.1
  * @updatetime    2017-7-03 18:06:02
  */
 class TreeUtils
 {
     /**
-     * 生成Tree.
-     *
+     * 转树
      * @param array  $arrs
      * @param string $id
      * @param string $pid
      * @param string $child
-     *
      * @return array
      */
     public function make(array $arrs, $id = 'id', $pid = 'pid', $child = 'children')
@@ -50,13 +45,11 @@ class TreeUtils
     }
 
     /**
-     * Tree转一维数组.
-     *
+     * 转数组.
      * @param array  $areaTree
      * @param string $id
      * @param string $pid
      * @param string $child
-     *
      * @return array
      */
     public function toArray(array $areaTree, $id = 'id', $pid = 'pid', $child = 'children')

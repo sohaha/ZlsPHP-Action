@@ -59,13 +59,12 @@ class Http
             if (empty($cookie_path)) {
                 $cookie_path = z::tempPath().'/'.'Zls_http_cookie_'.md5(uniqid('', true));
                 $functionName = 'Zls_clean_'.md5(uniqid('', true));
-                eval('function '.$functionName.'() {
-                $path= "'.$cookie_path.'";
-                if (file_exists($path)) {
-                    unlink($path);
-                }
-                }');
-                register_shutdown_function($functionName);
+                register_shutdown_function(function () use ($cookie_path){
+                    $path= "'.$cookie_path.'";
+                    if (file_exists($path)) {
+                        unlink($path);
+                    }
+                });
             }
             curl_setopt($this->ch, CURLOPT_COOKIEJAR, $cookie_path);
             curl_setopt($this->ch, CURLOPT_COOKIEFILE, $cookie_path);

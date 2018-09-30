@@ -15,7 +15,7 @@ use Z;
 class ApiDoc
 {
     private static $TYPEMAPS
-                               = [
+        = [
             'string' => '字符串',
             'phone' => '手机号码',
             'eamil' => '电子邮箱',
@@ -29,20 +29,18 @@ class ApiDoc
             'object' => '对象',
             'json' => 'json',
         ];
-    private static $REPETITION = [];
 
     /**
-     * @param bool $global
      * @return array
      * @throws \ReflectionException
      */
-    public static function all($global = false)
+    public static function all()
     {
         $arr = [];
         $config = Z::config();
         $hmvcName = $config->getRoute()->gethmvcModuleName();
         self::listDirApiPhp(
-            $config->getAppDir().$config->getClassesDirName().'/'.$config->getControllerDirName().'/',
+            $config->getAppDir() . $config->getClassesDirName() . '/' . $config->getControllerDirName() . '/',
             $arr,
             $hmvcName
         );
@@ -50,7 +48,7 @@ class ApiDoc
         foreach ($arr as $k => $class) {
             $_hmvc = $hmvc = $class['hmvc'];
             if ((bool)$hmvc) {
-                $class['controller'] = 'Hmvc_'.$class['controller'];
+                $class['controller'] = 'Hmvc_' . $class['controller'];
             }
             $controller = $class['controller'];
             if ($config->hmvcIsDomainOnly($hmvc)) {
@@ -74,27 +72,21 @@ class ApiDoc
      */
     public static function listDirApiPhp($dir, &$arr, $hmvc = null, $Subfix = 'Api.php')
     {
-        if (is_dir($dir)) {
-            if ($dh = opendir($dir)) {
-                while (false !== ($file = readdir($dh))) {
-                    if ((is_dir($dir.'/'.$file)) && '.' != $file && '..' != $file) {
-                        self::listDirApiPhp($dir.$file.'/', $arr, $hmvc);
-                    } else {
-                        if (z::strEndsWith($file, $Subfix)) {
-                            $uri = explode('Controller/', $dir);
-                            $arr[] = [
-                                'controller' => 'Controller_'.str_replace('/', '_', $uri[1]).str_replace(
-                                        '.php',
-                                        '',
-                                        $file
-                                    ),
-                                'hmvc' => $hmvc,
-                            ];
-                        }
+        if (is_dir($dir) && ($dh = opendir($dir))) {
+            while (false !== ($file = readdir($dh))) {
+                if ((is_dir($dir . '/' . $file)) && '.' != $file && '..' != $file) {
+                    self::listDirApiPhp($dir . $file . '/', $arr, $hmvc);
+                } else {
+                    if (z::strEndsWith($file, $Subfix)) {
+                        $uri = explode('Controller/', $dir);
+                        $arr[] = [
+                            'controller' => 'Controller_' . str_replace('/', '_', $uri[1]) . str_replace('.php', '', $file),
+                            'hmvc' => $hmvc,
+                        ];
                     }
                 }
-                closedir($dh);
             }
+            closedir($dh);
         }
     }
 
@@ -167,6 +159,7 @@ class ApiDoc
                                 $returnArr[] = $value->name;
                             }
                             break;
+                        default:
                     }
                 } else {
                     $returnArr[] = $value->name;
@@ -223,7 +216,7 @@ class ApiDoc
         if (is_null($docInfo['title'])) {
             $docInfo['title'] = '{请检查函数注释}';
         }
-        $docInfo['url'] = ($docInfo['hmvc'] === z::config()->getCurrentDomainHmvcModuleNname()) ? $docInfo['controller'] : $docInfo['hmvc'].'/'.$docInfo['controller'];
+        $docInfo['url'] = ($docInfo['hmvc'] === z::config()->getCurrentDomainHmvcModuleNname()) ? $docInfo['controller'] : $docInfo['hmvc'] . '/' . $docInfo['controller'];
 
         return $docInfo;
     }
@@ -253,26 +246,25 @@ class ApiDoc
      * @return bool
      * @throws \ReflectionException
      */
-    public static function apiMethods(
-        $controller,
-        $method = null,
-        $paramsStatus = false,
-        $hmvcName = '',
-        $library = false
-    ) {
+    public static function apiMethods($controller, $method = null, $paramsStatus = false, $hmvcName = '', $library = false)
+    {
         if (!method_exists($controller, $method)) {
             return false;
         }
         $rMethod = new \Reflectionmethod($controller, $method);
         $substrStart = $hmvcName ? 16 : 11;
         if ($hmvcName && z::config()->getCurrentDomainHmvcModuleNname()) {
-            $docInfo['url'] = (!$library) ? z::url('/'.str_replace('_', '/', substr($controller, $substrStart)).'/'.substr(
-                                                       $method,
-                                                       strlen(z::config()->getMethodPrefix())
-                                                   ).z::config()->getMethodUriSubfix()) : $method;
+            $docInfo['url'] = (!$library) ?
+                z::url(
+                    '/'
+                    . str_replace('_', '/', substr($controller, $substrStart))
+                    . '/'
+                    . substr($method, strlen(z::config()->getMethodPrefix()))
+                    . z::config()->getMethodUriSubfix()
+                ) : $method;
         } else {
-            $hmvcName = (bool)$hmvcName ? '/'.$hmvcName : '';
-            $docInfo['url'] = (!$library) ? z::url($hmvcName.'/'.str_replace('_', '/', substr($controller, $substrStart)).'/'.substr($method, strlen(z::config()->getMethodPrefix())).z::config()->getMethodUriSubfix()) : $method;
+            $hmvcName = (bool)$hmvcName ? '/' . $hmvcName : '';
+            $docInfo['url'] = (!$library) ? z::url($hmvcName . '/' . str_replace('_', '/', substr($controller, $substrStart)) . '/' . substr($method, strlen(z::config()->getMethodPrefix())) . z::config()->getMethodUriSubfix()) : $method;
         }
         $docInfo['url'] = str_replace('\\', '/', $docInfo['url']);
         $docInfo['title'] = '{未命名}';
@@ -381,43 +373,43 @@ DD;
                             return "<button type='button' class='btn btn-xs btn-info' title='{$queryTypeTitle}'>{$v}</button>";
                         });
                         $queryType = join(' ', $queryType);
-                        echo '<tr><td>'.$param['name'].'</td><td>'.$queryType.'</td><td>'.$param['title'].'</td><td>'.$param['type'].'</td><td>'.$param['default'].'</td><td>'.$param['is'].'</td><td>'.$param['desc'].'</td></tr>';
+                        echo '<tr><td>' . $param['name'] . '</td><td>' . $queryType . '</td><td>' . $param['title'] . '</td><td>' . $param['type'] . '</td><td>' . $param['default'] . '</td><td>' . $param['is'] . '</td><td>' . $param['desc'] . '</td></tr>';
                     }
                 }
                 echo '</table><h3>返回示例</h3>';
                 $returnHtml = $returnJson = '';
                 foreach ($data['return'] as $return) {
                     if (is_string($return)) {
-                        $returnJson .= '<div class="text-muted panel panel-default"><div class="bg-warning panel-body">'.self::formatJson($return).'</div></div>';
+                        $returnJson .= '<div class="text-muted panel panel-default"><div class="bg-warning panel-body">' . self::formatJson($return) . '</div></div>';
                     } elseif ((bool)$return) {
-                        $returnHtml .= '<tr><td>'.$return['name'].'</td><td>'.$return['type'].'</td><td>'.$return['title'].'</td><td>'.$return['desc'].'</td></tr>';
+                        $returnHtml .= '<tr><td>' . $return['name'] . '</td><td>' . $return['type'] . '</td><td>' . $return['title'] . '</td><td>' . $return['desc'] . '</td></tr>';
                     }
                 }
                 if ((bool)$returnHtml) {
-                    echo '<table class="table table-striped table-bordered"><thead><tr><th>字段</th><th>类型</th><th class="w30">说明</th><th class="w30">备注</th></tr>'.$returnHtml.'</table>';
+                    echo '<table class="table table-striped table-bordered"><thead><tr><th>字段</th><th>类型</th><th class="w30">说明</th><th class="w30">备注</th></tr>' . $returnHtml . '</table>';
                 }
                 echo $returnJson;
                 echo '<div role="alert" class="alert alert-info"><strong>温馨提示：</strong> 此接口参数列表根据后台代码自动生成，可将 xxx?_api=self 改成您需要查询的接口</div>';
             } else {
-                $token = ((bool)$token = z::get('_token', '', true)) ? '&_token='.$token : '';
+                $token = ((bool)$token = z::get('_token', '', true)) ? '&_token=' . $token : '';
                 foreach ($data as $class) {
                     if (!z::arrayGet($class, 'class.controller')) {
                         continue;
                     }
                     $repetition = '';
                     foreach (z::arrayGet($class, 'class.repetition', []) as $i => $hmvc) {
-                        $_url = self::formatUrl(z::url($hmvc.'/'.$class['class']['controller']), '?_api'.$token);
-                        $repetition .= '<a href="'.$_url.'" target="_blank"><span class="label label-primary">'.$hmvc.'</span></a>';
+                        $_url = self::formatUrl(z::url($hmvc . '/' . $class['class']['controller']), '?_api' . $token);
+                        $repetition .= '<a href="' . $_url . '" target="_blank"><span class="label label-primary">' . $hmvc . '</span></a>';
                     }
                     echo '<div class="page-header jumbotrons"><h2>';
-                    echo $class['class']['title'].':'.$class['class']['controller'];
-                    echo '</h2><h4>'.$class['class']['desc'].'</h4><h3>'.$repetition.'</h3></div>';
+                    echo $class['class']['title'] . ':' . $class['class']['controller'];
+                    echo '</h2><h4>' . $class['class']['desc'] . '</h4><h3>' . $repetition . '</h3></div>';
                     echo '<table class="table table-hover table-bordered"><thead><tr><th class="col-md-4">接口服务</th><th class="col-md-3">接口名称</th><th class="col-md-2">更新时间</th><th class="col-md-4">更多说明</th></tr></thead><tbody>';
                     foreach ($class['method'] as $v) {
                         $updateTime = z::arrayGet($v, 'time', '--');
-                        $url = self::formatUrl($v['url'], '?_api=self'.$token);
-                        $url .= ($class['class']['key']) ? '&_key='.$class['class']['key'] : '';
-                        echo '<tr><td><a href="'.$v['url'].'" target="_blank"><button type="button" class="btn btn-primary btn-xs">TARGET</button></a> <a href="'.$url.'" target="_blank"><button type="button" class="btn btn-success btn-xs">INFO</button>  '.$v['url'].'</a></td><td>'.$v['title'].'</td><td>'.$updateTime.'</td><td>'.$v['desc'].'</td></tr>';
+                        $url = self::formatUrl($v['url'], '?_api=self' . $token);
+                        $url .= ($class['class']['key']) ? '&_key=' . $class['class']['key'] : '';
+                        echo '<tr><td><a href="' . $v['url'] . '" target="_blank"><button type="button" class="btn btn-primary btn-xs">TARGET</button></a> <a href="' . $url . '" target="_blank"><button type="button" class="btn btn-success btn-xs">INFO</button>  ' . $v['url'] . '</a></td><td>' . $v['title'] . '</td><td>' . $updateTime . '</td><td>' . $v['desc'] . '</td></tr>';
                     }
                     echo '</tbody></table>';
                 }
@@ -435,8 +427,8 @@ DD;
         $parse = parse_url($url);
         $path = z::arrayGet($parse, 'path', '');
         $query = z::arrayGet($parse, 'query', '');
-        $query = ($query ? $query.'&'.$args : $args);
-        $newUrl = $path.($query ? '?'.$query : '');
+        $query = ($query ? $query . '&' . $args : $args);
+        $newUrl = $path . ($query ? '?' . $query : '');
 
         return $newUrl;
     }
