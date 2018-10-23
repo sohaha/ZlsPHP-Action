@@ -4,13 +4,10 @@ namespace Zls\Action;
 
 /**
  * Zls\Action\StrUtils.
- *
  * @author        影浅
  * @email         seekwe@gmail.com
- *
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- *
- * @see          ---
+ * @see           ---
  * @since         v0.0.1
  * @updatetime    2018-07-13 11:55
  */
@@ -19,11 +16,10 @@ class StrUtils
     /**
      * uniqueId
      * 生成16位以上唯一ID.
-     *
+     * @todo 后期移动到ID类
      * @param int    $length 不含前后缀的长度，最小14，建议16+
      * @param string $prefix 前缀
      * @param string $subfix 后缀
-     *
      * @return string $id
      */
     public function uniqueId($prefix = '', $subfix = '', $length = 16)
@@ -49,18 +45,16 @@ class StrUtils
             $id .= $mtRand();
         }
 
-        return $id.$subfix;
+        return $id . $subfix;
     }
 
     /**
      * 加星号.
-     *
      * @param        $str
      * @param int    $start
      * @param int    $end
      * @param string $dot
      * @param string $charset
-     *
      * @return string
      */
     public function stringStar($str, $start = 1, $end = 0, $dot = '*', $charset = 'UTF-8')
@@ -93,20 +87,17 @@ class StrUtils
 
     /**
      * 随机OPENID.
-     *
      * @return string
      */
     public function openid()
     {
-        return 'o7nWYj'.$this->randString(22, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_');
+        return 'o7nWYj' . $this->randString(22, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_');
     }
 
     /**
      * 产生随机字符串.
-     *
      * @param int    $length
      * @param string $chars
-     *
      * @return string
      */
     public function randString($length = 4, $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_ []{}<>~`+=,.;:/?|')
@@ -122,9 +113,7 @@ class StrUtils
 
     /**
      * 取汉字的第一个字的首字母.
-     *
      * @param $str
-     *
      * @return null|string
      */
     public function firstCharter($str)
