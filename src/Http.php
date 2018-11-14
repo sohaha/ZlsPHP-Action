@@ -28,7 +28,7 @@ class Http
     private $responseBodyMulti   = [];
     private $responseInfoMulti   = [];
     private $responseErrorMulti  = [];
-    private $cookie;
+    private $_cookie;
     private $cookiePath;
 
     public function __construct()
@@ -393,7 +393,12 @@ class Http
         $this->responseHeader = isset($info[0]) ? $info[0] : '';
         $this->responseBody = isset($info[1]) ? $info[1] : '';
         $this->responseInfo = curl_getinfo($ch);
-        $this->cookie = curl_getinfo($ch, CURLINFO_COOKIELIST);
+        $this->_cookie = curl_getinfo($ch, CURLINFO_COOKIELIST);
+    }
+
+    public function setProxy($proxy)
+    {
+        curl_setopt($this->ch, CURLOPT_PROXY, $proxy);
     }
 
     /**
@@ -628,19 +633,23 @@ class Http
 
     public function cookie()
     {
-        $cookie = $this->cookie;
+        $cookie = $this->_cookie;
         $cookies = [];
-        if (!$cookie && file_exists($this->cookiePath)) {
-            $cookie = file($this->cookiePath);
+        if (!$cookie) {
+            $cookie = file_exists($this->cookiePath) ? file($this->cookiePath) : [];
         }
-        foreach ($cookie as $line) {
-            if (!substr_count($line, "\t") == 6) {
-                continue;
+        if (!!z::arrayGet($cookie, 0)) {
+            foreach ($cookie as $line) {
+                if (!substr_count($line, "\t") == 6) {
+                    continue;
+                }
+                $tokens = array_map('trim', explode("\t", $line));
+                if ($key = z::arrayGet($tokens, 5)) {
+                    $cookies[$tokens[5]] = $tokens[6];
+                }
             }
-            $tokens = array_map('trim', explode("\t", $line));
-            if ($key = z::arrayGet($tokens, 5)) {
-                $cookies[$tokens[5]] = $tokens[6];
-            }
+        } else {
+            $cookies = $this->_cookie;
         }
 
         return $cookies;
@@ -662,10 +671,12 @@ class Http
     {
         $cookies = [];
         if (is_array($key)) {
+            $this->_cookie = $key;
             foreach ($key as $k => $v) {
                 $cookies[] = $k . '=' . urlencode($v);
             }
         } else {
+            $this->_cookie[$key] = urlencode($val);
             $cookies[] = ' ' . $key . '=' . urlencode($val);
         }
         if (!empty($cookies)) {
