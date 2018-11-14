@@ -237,20 +237,19 @@ class Http
         if (!$exec) {
             return $ch;
         } else {
-            $data = $this->curl_exec_follow($maxRedirect);
+            $data = $this->curlExecFollow($maxRedirect);
             if ($this->sleep) {
                 usleep($this->sleep);
             }
             $this->reset();
             if (!$this->errorCode()) {
-                $info = explode("\r\n\r\n", $data, 2);
-                $this->responseHeader = isset($info[0]) ? $info[0] : '';
-                $this->responseBody = isset($info[1]) ? $info[1] : '';
-                $this->responseInfo = curl_getinfo($ch);
-                $this->cookie = curl_getinfo($ch, CURLINFO_COOKIELIST);
+                $this->setData(explode("\r\n\r\n", $data, 2), $ch);
+
                 //$this->reset();
                 return $this->responseBody;
             } else {
+                $this->setData([], $ch);
+
                 return '';
             }
         }
@@ -269,7 +268,7 @@ class Http
      * @param string $maxRedirect
      * @return bool
      */
-    private function curl_exec_follow($maxRedirect)
+    private function curlExecFollow($maxRedirect)
     {
         $maxRedirect = $maxRedirect < 0 ? 0 : $maxRedirect;
         if (0 == $maxRedirect) {
@@ -290,10 +289,11 @@ class Http
             $data = curl_exec($this->ch);
             $this->reset();
             if (!curl_errno($this->ch)) {
-                $info = explode("\r\n\r\n", $data, 2);
-                $this->responseHeader = isset($info[0]) ? $info[0] : '';
-                $this->responseBody = isset($info[1]) ? $info[1] : '';
-                $this->responseInfo = curl_getinfo($this->ch);
+                //$info = explode("\r\n\r\n", $data, 2);
+                //$this->responseHeader = isset($info[0]) ? $info[0] : '';
+                //$this->responseBody = isset($info[1]) ? $info[1] : '';
+                //$this->responseInfo = curl_getinfo($this->ch);
+                //$this->setData(explode("\r\n\r\n", $data, 2), $ch);
                 if (!$this->isRedirect()) {
                     $this->setError(0, '');
 
@@ -386,6 +386,14 @@ class Http
     public function errorCode()
     {
         return $this->error['code'];
+    }
+
+    private function setData($info, &$ch)
+    {
+        $this->responseHeader = isset($info[0]) ? $info[0] : '';
+        $this->responseBody = isset($info[1]) ? $info[1] : '';
+        $this->responseInfo = curl_getinfo($ch);
+        $this->cookie = curl_getinfo($ch, CURLINFO_COOKIELIST);
     }
 
     /**
