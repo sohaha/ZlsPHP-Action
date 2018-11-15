@@ -30,6 +30,8 @@ class Http
     private $responseErrorMulti  = [];
     private $_cookie;
     private $cookiePath;
+    /** @var \Closure $cookieFn */
+    private $cookieFn;
 
     public function __construct()
     {
@@ -393,7 +395,33 @@ class Http
         $this->responseHeader = isset($info[0]) ? $info[0] : '';
         $this->responseBody = isset($info[1]) ? $info[1] : '';
         $this->responseInfo = curl_getinfo($ch);
-        $this->_cookie = curl_getinfo($ch, CURLINFO_COOKIELIST);
+        $cookie = curl_getinfo($ch, CURLINFO_COOKIELIST);
+        $header = explode("\n", $this->responseHeader);
+        $setcookie = [];
+        foreach ($header as $part) {
+            $middle = explode(':', $part);
+            if (trim($middle[0]) === 'Set-Cookie') {
+                list($data) = explode(';', trim($middle[1]));
+                list($k, $v) = explode('=', $data);
+                $v && $setcookie[$k] = $v;
+            }
+        }
+        if ($setcookie && !!($fn = $this->cookieFn)) {
+            $fn($setcookie);
+        }
+        if (!$cookie) {
+            if ($setcookie) {
+                $cookie = array_merge($this->_cookie ?: [], $setcookie);
+            } else {
+                $cookie = $this->_cookie;
+            }
+        }
+        $this->_cookie = $cookie;
+    }
+
+    public function onCookie(\Closure $cb)
+    {
+        $this->cookieFn = $cb;
     }
 
     public function setProxy($proxy)
@@ -653,6 +681,11 @@ class Http
         }
 
         return $cookies;
+    }
+
+    public function __destruct()
+    {
+        @curl_close($this->ch);
     }
 
     /**
