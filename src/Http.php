@@ -103,7 +103,7 @@ class Http
         return $this;
     }
 
-    public function userAgent($user_agent)
+    public function setUserAgent($user_agent)
     {
         $this->userAgent = $user_agent;
     }
@@ -136,7 +136,7 @@ class Http
         return $ip1id . '.' . $ip2id . '.' . $ip3id . '.' . $ip4id;
     }
 
-    public function proxy($ip, $port = 80, $username = '', $password = '')
+    public function setProxy($ip, $port = 80, $username = '', $password = '')
     {
         curl_setopt($this->ch, CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
         curl_setopt($this->ch, CURLOPT_PROXY, $ip);
@@ -424,11 +424,6 @@ class Http
         $this->cookieFn = $cb;
     }
 
-    public function setProxy($proxy)
-    {
-        curl_setopt($this->ch, CURLOPT_PROXY, $proxy);
-    }
-
     /**
      * 使用POST方式请求一个页面.
      * @param string     $url         页面地址
@@ -471,13 +466,6 @@ class Http
     public function errorMsg()
     {
         return $this->error['msg'];
-    }
-
-    public function setUserAgent($userAgent)
-    {
-        curl_setopt($this->ch, CURLOPT_USERAGENT, $userAgent);
-
-        return $this;
     }
 
     /**
