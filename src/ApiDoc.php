@@ -9,26 +9,25 @@ use Z;
  * @author        影浅-Seekwe
  * @email         seekwe@gmail.com
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- * @since         v1.1.0
- * @updatetime    2018-7-30 13:56:30
+ * @updatetime    2018-12-4 18:03:00
  */
 class ApiDoc
 {
     private static $TYPEMAPS
         = [
-            'string' => '字符串',
-            'phone' => '手机号码',
-            'eamil' => '电子邮箱',
-            'int' => '整型',
-            'float' => '浮点型',
-            'boolean' => '布尔型',
-            'date' => '日期',
-            'array' => '数组',
-            'fixed' => '固定值',
-            'enum' => '枚举类型',
-            'object' => '对象',
-            'json' => 'json',
-        ];
+        'string' => '字符串',
+        'phone' => '手机号码',
+        'eamil' => '电子邮箱',
+        'int' => '整型',
+        'float' => '浮点型',
+        'boolean' => '布尔型',
+        'date' => '日期',
+        'array' => '数组',
+        'fixed' => '固定值',
+        'enum' => '枚举类型',
+        'object' => '对象',
+        'json' => 'json',
+    ];
 
     /**
      * @return array
@@ -256,12 +255,12 @@ class ApiDoc
         if ($hmvcName && z::config()->getCurrentDomainHmvcModuleNname()) {
             $docInfo['url'] = (!$library) ?
                 z::url(
-                    '/'
+                '/'
                     . str_replace('_', '/', substr($controller, $substrStart))
                     . '/'
                     . substr($method, strlen(z::config()->getMethodPrefix()))
                     . z::config()->getMethodUriSubfix()
-                ) : $method;
+            ) : $method;
         } else {
             $hmvcName = (bool)$hmvcName ? '/' . $hmvcName : '';
             $docInfo['url'] = (!$library) ? z::url($hmvcName . '/' . str_replace('_', '/', substr($controller, $substrStart)) . '/' . substr($method, strlen(z::config()->getMethodPrefix())) . z::config()->getMethodUriSubfix()) : $method;
@@ -350,7 +349,7 @@ class ApiDoc
      */
     public static function html($type = 'parent', $data)
     {
-        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>接口</title><meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css"><style>.panel-body,table{word-break:break-all}.w30{width:30%}.alert-info{margin-top:10px;}</style></head><body><br/><div class="container" style="width:90%">';
+        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>接口</title><meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/bootstrap@3.2.0/dist/css/bootstrap.min.css"><style>.panel-body,table{word-break:break-all}.w30{width:30%}.alert-info{margin-top:10px;}th,td{white-space: nowrap;}.table-box{overflow:auto;margin-bottom: 20px;}table.table{margin:0}</style></head><body><br/><div class="container" style="width:90%">';
         if ((bool)$data) {
             if ('self' == $type) {
                 $updateTime = z::arrayGet($data, 'time', '');
@@ -359,7 +358,7 @@ class ApiDoc
                 $url = self::formatUrl($data['url'], '');
                 echo <<<DD
 <div class="page-header"><h2>{$data['title']}<h4>{$data['desc']}</h4>{$updateTime}<h5><a target="_blank" href="{$url}"><button type="button" class="btn btn-primary btn-xs">TARGET</button></a> <a target="_blank" href="{$url}">
-{$_host}{$url}</a></h5></h2></div><h3>请求参数</h3><table class="table table-striped table-bordered" >
+{$_host}{$url}</a></h5></h2></div><h3>请求参数</h3><div class="table-box"><table class="table table-striped table-bordered" >
 <thead>
 DD;
                 if (count($data['param']) > 0) {
@@ -376,7 +375,7 @@ DD;
                         echo '<tr><td>' . $param['name'] . '</td><td>' . $queryType . '</td><td>' . $param['title'] . '</td><td>' . $param['type'] . '</td><td>' . $param['default'] . '</td><td>' . $param['is'] . '</td><td>' . $param['desc'] . '</td></tr>';
                     }
                 }
-                echo '</table><h3>返回示例</h3>';
+                echo '</table></div><h3>返回示例</h3>';
                 $returnHtml = $returnJson = '';
                 foreach ($data['return'] as $return) {
                     if (is_string($return)) {
@@ -386,7 +385,7 @@ DD;
                     }
                 }
                 if ((bool)$returnHtml) {
-                    echo '<table class="table table-striped table-bordered"><thead><tr><th>字段</th><th>类型</th><th class="w30">说明</th><th class="w30">备注</th></tr>' . $returnHtml . '</table>';
+                    echo '<div class="table-box"><table class="table table-striped table-bordered"><thead><tr><th>字段</th><th>类型</th><th class="w30">说明</th><th class="w30">备注</th></tr>' . $returnHtml . '</table></div>';
                 }
                 echo $returnJson;
                 echo '<div role="alert" class="alert alert-info"><strong>温馨提示：</strong> 此接口参数列表根据后台代码自动生成，可将 xxx?_api=self 改成您需要查询的接口</div>';
@@ -404,14 +403,14 @@ DD;
                     echo '<div class="page-header jumbotrons"><h2>';
                     echo $class['class']['title'] . ':' . $class['class']['controller'];
                     echo '</h2><h4>' . $class['class']['desc'] . '</h4><h3>' . $repetition . '</h3></div>';
-                    echo '<table class="table table-hover table-bordered"><thead><tr><th class="col-md-4">接口服务</th><th class="col-md-3">接口名称</th><th class="col-md-2">更新时间</th><th class="col-md-4">更多说明</th></tr></thead><tbody>';
+                    echo '<div class="table-box"><table class="table table-hover table-bordered"><thead><tr><th class="col-md-4">接口服务</th><th class="col-md-3">接口名称</th><th class="col-md-2">更新时间</th><th class="col-md-4">更多说明</th></tr></thead><tbody>';
                     foreach ($class['method'] as $v) {
                         $updateTime = z::arrayGet($v, 'time', '--');
                         $url = self::formatUrl($v['url'], '?_api=self' . $token);
                         $url .= ($class['class']['key']) ? '&_key=' . $class['class']['key'] : '';
                         echo '<tr><td><a href="' . $v['url'] . '" target="_blank"><button type="button" class="btn btn-primary btn-xs">TARGET</button></a> <a href="' . $url . '" target="_blank"><button type="button" class="btn btn-success btn-xs">INFO</button>  ' . $v['url'] . '</a></td><td>' . $v['title'] . '</td><td>' . $updateTime . '</td><td>' . $v['desc'] . '</td></tr>';
                     }
-                    echo '</tbody></table>';
+                    echo '</tbody></table></div>';
                 }
                 echo '<div role="alert" class="alert alert-info"><strong>温馨提示：</strong> 此接口参数列表根据后台代码自动生成，在任意链接追加?_api=all查看所有接口</div>';
             }
