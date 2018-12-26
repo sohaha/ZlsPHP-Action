@@ -7,15 +7,15 @@ use Z;
 class Id
 {
     const SPREAD = '_';
-    protected $secret       = 'zls';
-    protected $offset       = 5;
+    protected $secret = 'zls';
+    protected $offset = 5;
     protected $randomLength = 4;
-    protected $prefix       = '';
+    protected $prefix = '';
 
     public function set($secret, int $offset, int $randomLength)
     {
-        $this->secret = $secret;
-        $this->offset = $offset;
+        $this->secret       = $secret;
+        $this->offset       = $offset;
         $this->randomLength = $randomLength;
     }
 
@@ -40,10 +40,10 @@ class Id
         if ($length < 14) {
             $length = 14;
         }
-        $id = $this->prefix;
+        $id        = $this->prefix;
         $addLength = $length - 13;
-        $id .= uniqid();
-        $mtRand = function () use ($addLength) {
+        $id        .= uniqid();
+        $mtRand    = function () use ($addLength) {
             return mt_rand(1 * pow(10, ($addLength)), 9 * pow(10, ($addLength)));
         };
         if (function_exists('random_bytes')) {
@@ -78,11 +78,11 @@ class Id
             return !$pass;
         };
         if (z::checkValue($id, ['function' => $isNumeric])) {
-            $offsetId = $id + $this->offset;
-            $rand = $this->randInt();
+            $offsetId        = $id + $this->offset;
+            $rand            = $this->randInt();
             $signatureString = $prefix . $rand . $offsetId;
-            $signature = $this->signature($signatureString);
-            $header = substr($signature, $this->offset % 2, strlen($rand . $offsetId));
+            $signature       = $this->signature($signatureString);
+            $header          = substr($signature, $this->offset % 2, strlen($rand . $offsetId));
 
             return $this->Bencode($header . self::SPREAD . $signatureString);
         } else {
@@ -106,14 +106,14 @@ class Id
         return hash_hmac('SHA256', $signatureString, $this->secret);
     }
 
-    public function Bencode(string $string): string
+    public function Bencode($string)
     {
         return rtrim(strtr(base64_encode($string), '+/', '-_'), '=');
     }
 
-    public function decode(string $encodedId, string $prefix = '')
+    public function decode($encodedId, $prefix = '')
     {
-        $raw = $this->Bdecode($encodedId);
+        $raw   = $this->Bdecode($encodedId);
         $attrs = explode(self::SPREAD, $raw);
         if (count($attrs) !== 2) {
             return '';
@@ -124,7 +124,7 @@ class Id
         return $this->checkHeader($header, $signatureString, strlen($offsetId)) ? $offsetId - $this->offset : '';
     }
 
-    public function Bdecode(string $string)
+    public function Bdecode($string)
     {
         return base64_decode(strtr($string, '-_', '+/'));
     }
