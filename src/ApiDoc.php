@@ -8,22 +8,23 @@ use Z;
  * 生成Api文档.
  * @author        影浅-Seekwe
  * @email         seekwe@gmail.com
- * @copyright     Copyright (c) 2015 - 2018, 影浅, Inc.
+ * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
+ * @updatetime    2018-12-4 18:03:00
  */
 class ApiDoc
 {
     private static $REQUEST_METHOD = [
-        'GET',
-        'POST',
-        'PUT',
-        'PATCH',
-        'DELETE',
-        'COPY',
-        'HEAD',
-        'OPTIONS',
-        'LINK',
-        'UNLINK',
-        'PURGE',
+        'GET'     => 'success',
+        'POST'    => 'warning',
+        'PUT'     => 'primary',
+        'PATCH'   => 'info',
+        'DELETE'  => 'danger',
+        'COPY'    => 'default',
+        'HEAD'    => 'default',
+        'OPTIONS' => 'default',
+        'LINK'    => 'default',
+        'UNLINK'  => 'default',
+        'PURGE'   => 'default',
     ];
     private static $TYPEMAPS
         = [
@@ -122,7 +123,7 @@ class ApiDoc
         $methodArr = [];
         foreach ($methods as $method) {
             $methodType = strtoupper(Z::arrayGet(explode($Prefix, $method), 0, ''));
-            $isHas      = $methodType && in_array($methodType, self::$REQUEST_METHOD) ?: 0 === strpos($method, $Prefix);
+            $isHas      = $methodType && in_array($methodType, array_keys(self::$REQUEST_METHOD)) ?: 0 === strpos($method, $Prefix);
             if (!$library && !$isHas) {
                 continue;
             }
@@ -370,6 +371,11 @@ class ApiDoc
         return $ret;
     }
 
+    private static function toColor($type)
+    {
+        return Z::arrayGet(self::$REQUEST_METHOD, strtoupper($type), 'info');
+    }
+
     /**
      * @param string $type
      * @param        $data
@@ -386,8 +392,9 @@ href="//cdn.jsdelivr.net/npm/bootstrap@3.2.0/dist/css/bootstrap.min.css"><style>
                 $_host      = z::host();
                 $url        = self::formatUrl($data['url'], '');
                 $methodType = (z::arrayGet($data, 'type') ?: 'AT_WILL');
+                $toColor    = self::toColor($methodType);
                 echo <<<DD
-<div class="page-header"><h2>{$data['title']}<h4>{$data['desc']}</h4>{$updateTime}<h5><a target="_blank" href="{$url}"><button type="button" class="btn btn-primary btn-xs type-btn">{$methodType}</button></a> <a target="_blank" href="{$url}">
+<div class="page-header"><h2>{$data['title']}<h4>{$data['desc']}</h4>{$updateTime}<h5><a target="_blank" title="复制接口地址" onclick="copyUrl('{$_host}{$url}')"><button type="button" class="btn btn-{$toColor} btn-xs type-btn">{$methodType}</button>
 {$_host}{$url}</a></h5></h2></div><h3>请求参数</h3><div class="table-box"><table class="table table-striped table-bordered" >
 <thead>
 DD;
@@ -398,8 +405,9 @@ DD;
                         $queryType = z::arrayMap($query, function ($v) {
                             $v              = strtoupper(trim($v));
                             $queryTypeTitle = $v === 'POST' ? 'form-data' : strtolower($v);
+                            $toColor        = self::toColor($v);
 
-                            return "<button type='button' class='btn btn-xs btn-info' title='{$queryTypeTitle}'>{$v}</button>";
+                            return "<button type='button' class='btn btn-xs btn-{$toColor}' title='{$queryTypeTitle}'>{$v}</button>";
                         });
                         $queryType = join(' ', $queryType);
                         echo '<tr><td>' . $param['name'] . '</td><td>' . $queryType . '</td><td>' . $param['title'] . '</td><td>' . $param['type'] . '</td><td>' . $param['default'] . '</td><td>' . $param['is'] . '</td><td>' . $param['desc'] . '</td></tr>';
@@ -439,10 +447,11 @@ DD;
                     echo '<div class="table-box"><table class="table table-hover table-bordered"><thead><tr><th class="col-md-4">接口服务</th><th class="col-md-3">接口名称</th><th class="col-md-2">更新时间</th><th class="col-md-4">更多说明</th></tr></thead><tbody>';
                     foreach ($class['method'] as $v) {
                         $methodType = Z::arrayGet($v, 'type');
+                        $toColor    = self::toColor($methodType);
                         $updateTime = z::arrayGet($v, 'time', '--');
                         $url        = self::formatUrl($v['url'], "?_type={$methodType}&_api=self{$token}");
                         $url        .= ($class['class']['key']) ? '&_key=' . $class['class']['key'] : '';
-                        echo '<tr><td><a href="' . $v['url'] . '" target="_blank"><button type="button" class="btn btn-primary btn-xs type-btn">' . ($methodType ?: 'AT_WILL') . '</button></a> <a href="' . $url . '" target="_blank"><button type="button" class="btn btn-success btn-xs">INFO</button>  ' . $v['url'] . '</a></td><td>' . $v['title'] . '</td><td>' . $updateTime . '</td><td>' . $v['desc'] . '</td></tr>';
+                        echo '<tr><td><button title="复制接口地址" onclick="copyUrl(\'' . $v['url'] . '\')" type="button" class="btn btn-' . $toColor . ' btn-xs type-btn">' . ($methodType ?: 'AT_WILL') . '</button> <a title="查看接口详情" href="' . $url . '" target="_blank">' . $v['url'] . '</a></td><td>' . $v['title'] . '</td><td>' . $updateTime . '</td><td>' . $v['desc'] . '</td></tr>';
                     }
                     echo '</tbody></table></div>';
                 }
@@ -451,7 +460,7 @@ DD;
         } else {
             echo '<h2>没有找到API接口数据</h2>';
         }
-        echo '</div></body></html>';
+        echo '</div><input id="copyText" style="opacity :0;position: fixed;z-index: -1;"><script>function copyUrl(text) {var input = document.getElementById(\'copyText\'); input.value = text;input.select();document.execCommand(\'copy\');alert(\'复制成功\');}</script></body></html>';
     }
 
     public static function formatUrl($url, $args)
