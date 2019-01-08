@@ -25,22 +25,22 @@ class ApiDoc
         'LINK'    => 'default',
         'UNLINK'  => 'default',
         'PURGE'   => 'default',
+        'RAW'     => 'default',
     ];
-    private static $TYPEMAPS
-        = [
-            'string'  => '字符串',
-            'phone'   => '手机号码',
-            'eamil'   => '电子邮箱',
-            'int'     => '整型',
-            'float'   => '浮点型',
-            'boolean' => '布尔型',
-            'date'    => '日期',
-            'array'   => '数组',
-            'fixed'   => '固定值',
-            'enum'    => '枚举类型',
-            'object'  => '对象',
-            'json'    => 'json',
-        ];
+    private static $TYPEMAPS = [
+        'string'  => '字符串',
+        'phone'   => '手机号码',
+        'eamil'   => '电子邮箱',
+        'int'     => '整型',
+        'float'   => '浮点型',
+        'boolean' => '布尔型',
+        'date'    => '日期',
+        'array'   => '数组',
+        'fixed'   => '固定值',
+        'enum'    => '枚举类型',
+        'object'  => '对象',
+        'json'    => 'json',
+    ];
 
     /**
      * @return array
@@ -66,7 +66,7 @@ class ApiDoc
             if ($config->hmvcIsDomainOnly($hmvc)) {
                 continue;
             }
-            $data = self::docComment($controller, $hmvc);
+            $data = self::docComment($controller, $hmvc, false, $class['time']);
             if (!$data) {
                 continue;
             }
@@ -86,14 +86,20 @@ class ApiDoc
     {
         if (is_dir($dir) && ($dh = opendir($dir))) {
             while (false !== ($file = readdir($dh))) {
-                if ((is_dir($dir . '/' . $file)) && '.' != $file && '..' != $file) {
+                if ('.' === $file || '..' === $file) {
+                    continue;
+                }
+                $filePath = Z::realPath($dir . '/' . $file);
+                if ((is_dir($filePath))) {
                     self::listDirApiPhp($dir . $file . '/', $arr, $hmvc);
                 } else {
                     if (z::strEndsWith($file, $Subfix)) {
-                        $uri   = explode('Controller/', $dir);
-                        $arr[] = [
+                        $uri       = explode('Controller/', $dir);
+                        $filemtime = filemtime($filePath);
+                        $arr[]     = [
                             'controller' => 'Controller_' . str_replace('/', '_', $uri[1]) . str_replace('.php', '', $file),
                             'hmvc'       => $hmvc,
+                            'time'       => $filemtime ? date('Y-m-d H:i:s', $filemtime) : '',
                         ];
                     }
                 }
@@ -109,7 +115,7 @@ class ApiDoc
      * @return array|bool
      * @throws \ReflectionException
      */
-    public static function docComment($controller = null, $hmvcName = '', $library = false)
+    public static function docComment($controller = null, $hmvcName = '', $library = false, $filetime = null)
     {
         $Prefix     = Z::config()->getMethodPrefix();
         $controller = self::getClassName($controller);
@@ -127,7 +133,7 @@ class ApiDoc
             if (!$library && !$isHas) {
                 continue;
             }
-            $methodArr[] = self::apiMethods($controller, $method, false, $hmvcName, $library, $methodType);
+            $methodArr[] = self::apiMethods($controller, $method, false, $hmvcName, $library, $methodType, $filetime);
         }
 
         return [['class' => $class, 'method' => $methodArr]];
@@ -261,7 +267,7 @@ class ApiDoc
      * @return bool
      * @throws \ReflectionException
      */
-    public static function apiMethods($controller, $method = null, $paramsStatus = false, $hmvcName = '', $library = false, $methodType = '')
+    public static function apiMethods($controller, $method = null, $paramsStatus = false, $hmvcName = '', $library = false, $methodType = '', $filetime = null)
     {
         if ($methodType === '') {
             $methodType = Z::get('_type', '');
@@ -321,6 +327,9 @@ class ApiDoc
                 }
             }
         }
+        if (!Z::arrayKeyExists('time', $docInfo)) {
+            $docInfo['time'] = $filetime;
+        }
 
         return $docInfo;
     }
@@ -356,8 +365,28 @@ class ApiDoc
             $query          = strtoupper(trim(z::arrayGet($retArr, 3)));
             $query          = z::arrayMap(explode('|', $query), function ($query) use ($restfulType) {
                 $query = trim($query);
+                $query = $query && !in_array($query, ['', '\'\'', '""', '-']) ? $query : '';
+                $_P    = 'Post-FormDate';
+                $_G    = 'Get';
+                $_R    = 'Raw';
+                $_RT   = 'Raw-Text';
+                $_RJ   = 'Raw-Json';
+                $_F    = 'FormDate';
 
-                return ('P' == $query) ? 'POST' : (('G' == $query) ? 'GET' : ($query && !in_array($query, ['', '\'\'', '""', '-']) ? $query : $restfulType));
+                return Z::arrayGet([
+                    'P'    => $_P,
+                    'POST' => $_P,
+                    'G'    => $_G,
+                    'GET'  => $_G,
+                    'F'    => $_F,
+                    'FORM' => $_F,
+                    'J'    => $_RJ,
+                    'JSON' => $_RJ,
+                    'T'    => $_RT,
+                    'TEXT' => $_RT,
+                    'R'    => $_R,
+                    'RAW'  => $_R,
+                ], strtoupper($query), $query);
             });
             $ret['query']   = join('|', $query);
             $default        = z::arrayGet($retArr, 4, '');
@@ -403,11 +432,10 @@ DD;
                     foreach ($data['param'] as $param) {
                         $query     = explode('|', $param['query']);
                         $queryType = z::arrayMap($query, function ($v) {
-                            $v              = strtoupper(trim($v));
-                            $queryTypeTitle = $v === 'POST' ? 'form-data' : strtolower($v);
+                            $queryTypeTitle = $v;
                             $toColor        = self::toColor($v);
 
-                            return "<button type='button' class='btn btn-xs btn-{$toColor}' title='{$queryTypeTitle}'>{$v}</button>";
+                            return $v ? "<button type='button' class='btn btn-xs btn-{$toColor}' title='{$queryTypeTitle}'>{$v}</button>" : '';
                         });
                         $queryType = join(' ', $queryType);
                         echo '<tr><td>' . $param['name'] . '</td><td>' . $queryType . '</td><td>' . $param['title'] . '</td><td>' . $param['type'] . '</td><td>' . $param['default'] . '</td><td>' . $param['is'] . '</td><td>' . $param['desc'] . '</td></tr>';
