@@ -476,7 +476,7 @@ class CheckRules
                     return false;
                 }
                 $args[0] = Z::arrayKeyExists(0, $args) && 'true' == $args[0] ? true : false;
-                $v = (array) $value;
+                $v = (array) $value? : [''];
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match(
                         '/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/',
