@@ -17,7 +17,7 @@ class FileUp
     public $error = ['code' => '', 'info' => ''];
     private $size = 2048;
     private $ext = ['jpg', 'png'];
-    private $file_formfield_name = 'file';
+    private $fileFormfieldName = 'file';
     private $type = 'jpg';
     private $save_name;
     private $dir;
@@ -29,7 +29,7 @@ class FileUp
      */
     public function setFormField($field_name)
     {
-        $this->file_formfield_name = $field_name;
+        $this->fileFormfieldName = $field_name;
     }
 
     /**
@@ -57,7 +57,7 @@ class FileUp
     {
         $this->save_name = $saveName;
         $this->dir = $dir;
-        $files = z::arrayGet($_FILES, $this->file_formfield_name);
+        $files = Z::filesGet($this->fileFormfieldName);
         if (is_null($files)) {
             $this->setError(404, '请先上传文件');
 
@@ -83,7 +83,7 @@ class FileUp
                 } else {
                     return false;
                 }
-                $newSaveName[] = empty($saveName) && '0' != $saveName ? $saveName.'_'.$k.'.'.$ext : null;
+                $newSaveName[] = empty($saveName) && '0' != $saveName ? $saveName . '_' . $k . '.' . $ext : null;
             }
         } else {
             $file = $files;
@@ -93,7 +93,7 @@ class FileUp
             } else {
                 return false;
             }
-            $newSaveName = empty($saveName) && '0' != $saveName ? null : $saveName.'.'.$ext;
+            $newSaveName = empty($saveName) && '0' != $saveName ? null : $saveName . '.' . $ext;
         }
 
         return $this->file($tmpName, $newSaveName);
@@ -146,7 +146,7 @@ class FileUp
         }
         $fileExt = $this->getFileExt($file);
         if (!in_array($fileExt, $ext)) {
-            $this->setError(402, '文件类型错误！只允许：'.implode(',', $ext));
+            $this->setError(402, '文件类型错误！只允许：' . implode(',', $ext));
 
             return false;
         }
@@ -161,10 +161,10 @@ class FileUp
         if ($file['size'] > $size_range || !$file['size']) {
             $this->setError(
                 401,
-                '文件"'.$file['name'].'"大小错误！最大：'.($max_size < 1024 ? $max_size.'KB' : sprintf(
-                    '%.1f',
+                '文件"' . $file['name'] . '"大小错误！最大：' . ($max_size < 1024 ? $max_size . 'KB' : sprintf(
+                        '%.1f',
                         $max_size / 1024
-                ).'MB')
+                    ) . 'MB')
             );
 
             return false;
@@ -183,16 +183,16 @@ class FileUp
                 $src_file = $file[$k]['tmp_name'];
                 if (empty($save_name)) {
                     $file_ext = strtolower(pathinfo($file[$k]['name'], PATHINFO_EXTENSION));
-                    $save_name = md5(sha1_file($src_file)).'.'.$file_ext;
+                    $save_name = md5(sha1_file($src_file)) . '.' . $file_ext;
                 }
                 if (!empty($dir)) {
                     $subfix = $dir[strlen($dir) - 1];
-                    $_dir = ('/' == $subfix || '\\' == $subfix ? $dir : $dir.'/');
-                    $dir = pathinfo($_dir.$save_name, PATHINFO_DIRNAME);
+                    $_dir = ('/' == $subfix || '\\' == $subfix ? $dir : $dir . '/');
+                    $dir = pathinfo($_dir . $save_name, PATHINFO_DIRNAME);
                 } else {
                     $dir = pathinfo($save_name, PATHINFO_DIRNAME);
                 }
-                $save_name = z::realPathMkdir($dir, true, false, true).$save_name;
+                $save_name = z::realPathMkdir($dir, true, false, true) . $save_name;
                 @move_uploaded_file($src_file, $save_name);
                 if (file_exists($save_name)) {
                     $res[] = $save_name;
@@ -208,17 +208,17 @@ class FileUp
             $src_file = $file['tmp_name'];
             if (empty($saveName)) {
                 $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                $saveName = md5(sha1_file($src_file)).'.'.$file_ext;
+                $saveName = md5(sha1_file($src_file)) . '.' . $file_ext;
             }
             if (!empty($dir)) {
                 $subfix = $dir[strlen($dir) - 1];
-                $_dir = ('/' == $subfix || '\\' == $subfix ? $dir : $dir.'/');
-                $dir = pathinfo($_dir.$saveName, PATHINFO_DIRNAME);
+                $_dir = ('/' == $subfix || '\\' == $subfix ? $dir : $dir . '/');
+                $dir = pathinfo($_dir . $saveName, PATHINFO_DIRNAME);
             } else {
                 $dir = pathinfo($saveName, PATHINFO_DIRNAME);
             }
             //$rs = $dir . '/' . $_save_name;
-            $saveName = z::realPathMkdir($dir, true, false, true).$saveName;
+            $saveName = z::realPathMkdir($dir, true, false, true) . $saveName;
             @move_uploaded_file($src_file, $saveName);
             if (file_exists($saveName)) {
                 return $saveName; //$this->truepath($save_name);
@@ -247,12 +247,12 @@ class FileUp
 
     public function getFileRawName()
     {
-        return strtolower(pathinfo($_FILES[$this->file_formfield_name]['name'], PATHINFO_FILENAME));
+        return strtolower(pathinfo(Z::arrayGet(Z::filesGet($this->fileFormfieldName),'name'), PATHINFO_FILENAME));
     }
 
     public function getTmpFilePath()
     {
-        return $_FILES[$this->file_formfield_name]['tmp_name'];
+        return Z::arrayGet(Z::filesGet($this->fileFormfieldName),'tmp_name');
     }
 
     private function truepath($path)
@@ -262,7 +262,7 @@ class FileUp
         //检测一下是否是相对路径，windows下面没有:,linux下面没有/开头
         //如果是相对路径就加上当前工作目录前缀
         if (false === strpos($path, ':') && strlen($path) && '/' != $path[0]) {
-            $path = getcwd().DIRECTORY_SEPARATOR.$path;
+            $path = getcwd() . DIRECTORY_SEPARATOR . $path;
         }
         $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
         $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
@@ -280,7 +280,7 @@ class FileUp
         //如果是linux这里会导致linux开头的/丢失
         $path = implode(DIRECTORY_SEPARATOR, $absolutes);
         //如果是linux，修复系统前缀
-        $path = $unipath ? (strlen($path) && '/' != $path[0] ? '/'.$path : $path) : $path;
+        $path = $unipath ? (strlen($path) && '/' != $path[0] ? '/' . $path : $path) : $path;
         //最后统一分隔符为/，windows兼容/
         $path = str_replace(['/', '\\'], '/', $path);
 

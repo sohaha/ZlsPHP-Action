@@ -9,12 +9,7 @@ use Z;
  *
  * @author        影浅
  * @email         seekwe@gmail.com
- *
- * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- *
- * @see          ---
- * @since         v0.0.1
- * @updatetime    2017-06-19 15:21
+ * @updatetime    2019-2-25 13:59:51
  */
 class CheckRules
 {
@@ -68,7 +63,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data) || empty($value)) {
                     return false;
                 }
-                $value = (array) $value;
+                $value = (array)$value;
                 foreach ($value as $v) {
                     if (empty($v)) {
                         return false;
@@ -117,7 +112,7 @@ class CheckRules
             },
             'match' => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
                 if (!Z::arrayKeyExists($key, $data) || !Z::arrayKeyExists(0, $args) || !Z::arrayKeyExists(
-                    $args[0],
+                        $args[0],
                         $data
                     ) || $value != $data[$args[0]]
                 ) {
@@ -137,7 +132,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $value = (array) $value;
+                $value = (array)$value;
                 foreach ($value as $v) {
                     if (!in_array($v, $args)) {
                         return false;
@@ -203,7 +198,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = Z::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
                     if (!$okay) {
@@ -217,7 +212,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = Z::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
                     if (!$okay) {
@@ -231,10 +226,10 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = 2 == count($args) ? (mb_strlen(
-                        $value,
+                                $value,
                                 'UTF-8'
                             ) >= intval($args[0])) && (mb_strlen(
                                 $value,
@@ -251,7 +246,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = Z::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
                     if (!$okay) {
@@ -265,7 +260,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = Z::arrayKeyExists(0, $args) && is_numeric($value) ? $value >= $args[0] : false;
                     if (!$okay) {
@@ -279,7 +274,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = Z::arrayKeyExists(0, $args) && is_numeric($value) ? $value <= $args[0] : false;
                     if (!$okay) {
@@ -293,7 +288,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = (2 == count($args)) && is_numeric($value) ? $value >= $args[0] && $value <= $args[1] : false;
                     if (!$okay) {
@@ -308,7 +303,7 @@ class CheckRules
                     return false;
                 }
                 //纯字母
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !preg_match('/[^A-Za-z]+/', $value);
                     if (!$okay) {
@@ -323,7 +318,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !preg_match('/[^A-Za-z0-9]+/', $value);
                     if (!$okay) {
@@ -338,7 +333,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !preg_match('/[^A-Za-z0-9_-]+/', $value);
                     if (!$okay) {
@@ -353,7 +348,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = preg_match('/^[A-Za-z]+/', $value);
                     if (!$okay) {
@@ -368,7 +363,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !preg_match('/[^0-9]+/', $value);
                     if (!$okay) {
@@ -383,7 +378,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = preg_match('/^([-+]?[1-9]\d*|0)$/', $value);
                     if (!$okay) {
@@ -398,7 +393,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = preg_match('/^([1-9]\d*|0)\.\d+$/', $value);
                     if (!$okay) {
@@ -413,7 +408,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = is_numeric($value);
                     if (!$okay) {
@@ -428,7 +423,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = preg_match('/^([1-9]\d*|0)$/', $value);
                     if (!$okay) {
@@ -443,7 +438,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = preg_match('/^[1-9]\d*$/', $value);
                     if (!$okay) {
@@ -458,7 +453,7 @@ class CheckRules
                     return false;
                 }
                 $args[0] = Z::arrayKeyExists(0, $args) && 'true' == $args[0] ? true : false;
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match(
                         '/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/',
@@ -476,7 +471,8 @@ class CheckRules
                     return false;
                 }
                 $args[0] = Z::arrayKeyExists(0, $args) && 'true' == $args[0] ? true : false;
-                $v = (array) $value? : [''];
+                $v = (array)$value;
+                $okay = $args[0];
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match(
                         '/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/',
@@ -487,14 +483,14 @@ class CheckRules
                     }
                 }
 
-                return true;
+                return $okay;
             },
             'qq' => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
                 $args[0] = Z::arrayKeyExists(0, $args) && 'true' == $args[0] ? true : false;
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match('/^[1-9][0-9]{4,}$/', $value) : $args[0];
                     if (!$okay) {
@@ -509,7 +505,7 @@ class CheckRules
                     return false;
                 }
                 $args[0] = Z::arrayKeyExists(0, $args) && 'true' == $args[0] ? true : false;
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match('/^(?:\d{3}-?\d{8}|\d{4}-?\d{7})$/', $value) : $args[0];
                     if (!$okay) {
@@ -524,7 +520,7 @@ class CheckRules
                     return false;
                 }
                 $args[0] = Z::arrayKeyExists(0, $args) && 'true' == $args[0] ? true : false;
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match(
                         '/^(((13[0-9]{1})|(17[0-9]{1})|(15[0-9]{1})|(18[0-9]{1})|(14[0-9]{1}))+\d{8})$/',
@@ -542,7 +538,7 @@ class CheckRules
                     return false;
                 }
                 $args[0] = Z::arrayKeyExists(0, $args) && 'true' == $args[0] ? true : false;
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match('/^[1-9]\d{5}(?!\d)$/', $value) : $args[0];
                     if (!$okay) {
@@ -557,7 +553,7 @@ class CheckRules
                     return false;
                 }
                 $args[0] = Z::arrayKeyExists(0, $args) && 'true' == $args[0] ? true : false;
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match('/^\d{14}(\d{4}|(\d{3}[xX])|\d{1})$/', $value) : $args[0];
                     if (!$okay) {
@@ -572,7 +568,7 @@ class CheckRules
                     return false;
                 }
                 $args[0] = Z::arrayKeyExists(0, $args) && 'true' == $args[0] ? true : false;
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match(
                         '/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/',
@@ -592,10 +588,10 @@ class CheckRules
                 $count = implode(',', array_slice($args, 1, 2));
                 $count = empty($count) ? '1,' : $count;
                 $can_empty = Z::arrayKeyExists(0, $args) && 'true' == $args[0];
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match(
-                        '/^[\x{4e00}-\x{9fa5}]{'.$count.'}$/u',
+                        '/^[\x{4e00}-\x{9fa5}]{' . $count . '}$/u',
                         $value
                     ) : $can_empty;
                     if (!$okay) {
@@ -610,7 +606,7 @@ class CheckRules
                     return false;
                 }
                 $args[0] = Z::arrayKeyExists(0, $args) && 'true' == $args[0] ? true : false;
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match(
                         '/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30)))$/',
@@ -628,7 +624,7 @@ class CheckRules
                     return false;
                 }
                 $args[0] = Z::arrayKeyExists(0, $args) && 'true' == $args[0] ? true : false;
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match(
                         '/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/',
@@ -646,7 +642,7 @@ class CheckRules
                     return false;
                 }
                 $args[0] = Z::arrayKeyExists(0, $args) && 'true' == $args[0] ? true : false;
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match(
                         '/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30))) (([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/',
@@ -663,7 +659,7 @@ class CheckRules
                 if (!Z::arrayKeyExists($key, $data)) {
                     return false;
                 }
-                $v = (array) $value;
+                $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = !empty($args[0]) ? preg_match($args[0], $value) : false;
                     if (!$okay) {
