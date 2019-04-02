@@ -6,10 +6,7 @@ use Z;
 
 /**
  * Http操作封装类.
- * @author        影浅
- * @email         seekwe@gmail.com
- * @since         v2.0.16
- * @updatetime    2018-11-12 17:48:14
+ * @author        影浅 seekwe@gmail.com
  * 需要php curl支持
  */
 class Http
@@ -291,10 +288,10 @@ class Http
             $data = curl_exec($this->ch);
             $this->reset();
             if (!curl_errno($this->ch)) {
-                //$info = explode("\r\n\r\n", $data, 2);
-                //$this->responseHeader = isset($info[0]) ? $info[0] : '';
-                //$this->responseBody = isset($info[1]) ? $info[1] : '';
-                //$this->responseInfo = curl_getinfo($this->ch);
+                $info = explode("\r\n\r\n", $data, 2);
+                $this->responseHeader = isset($info[0]) ? $info[0] : '';
+                $this->responseBody = isset($info[1]) ? $info[1] : '';
+                $this->responseInfo = curl_getinfo($this->ch);
                 //$this->setData(explode("\r\n\r\n", $data, 2), $ch);
                 if (!$this->isRedirect()) {
                     $this->setError(0, '');
