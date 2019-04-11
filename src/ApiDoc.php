@@ -282,10 +282,10 @@ class ApiDoc
             $docInfo['url'] = (!$library) ?
                 z::url(
                     '/'
-                    . str_replace('_', '/', substr($controller, $substrStart))
-                    . '/'
-                    . substr($method, strlen(z::config()->getMethodPrefix()))
-                    . z::config()->getMethodUriSubfix()
+                        . str_replace('_', '/', substr($controller, $substrStart))
+                        . '/'
+                        . substr($method, strlen(z::config()->getMethodPrefix()))
+                        . z::config()->getMethodUriSubfix()
                 ) : $method;
         } else {
             $hmvcName       = (bool)$hmvcName ? '/' . $hmvcName : '';
@@ -348,10 +348,11 @@ class ApiDoc
             return false;
         }
         $isReturn = Z::strEndsWith($type, 'return');
-        if ($isReturn && ('json' == $retArr[0] || 'object' == $retArr[0])) {
+        if ($isReturn && ('json' == $retArr[0] || 'object' == $retArr[0] || 'array' == $retArr[0])) {
             $data = json_decode(implode(' ', array_slice($retArr, 1)), true);
-
-            return (bool)$data ? implode(' ', array_slice($retArr, 1)) : false;
+            if (is_array($data)) {
+                return (bool)$data ? implode(' ', array_slice($retArr, 1)) : false;
+            }
         }
         $retArr = array_merge(array_filter($retArr, function ($e) {
             return '' == $e ? false : true;
@@ -391,7 +392,7 @@ class ApiDoc
             $ret['query']   = join('|', $query);
             $default        = z::arrayGet($retArr, 4, '');
             $ret['default'] = ('""' === $default || '\'\'' === $default) ? '' : $default;
-            $ret['is']      = ('N' == strtoupper(trim(z::arrayGet($retArr, 5)))) ? '否' : '是';
+            $ret['is']      = ('N' == strtoupper(trim(z::arrayGet($retArr, 5))) || 'NO' == strtoupper(trim(z::arrayGet($retArr, 5)))) ? '否' : '是';
             $ret['desc']    = implode(' ', array_slice($retArr, 6));
         }
         $ret['name'] = z::arrayGet($retArr, 1, '--');
@@ -420,7 +421,7 @@ href="//cdn.jsdelivr.net/npm/bootstrap@3.2.0/dist/css/bootstrap.min.css"><style>
                 $updateTime = $updateTime ? "<h5>更新时间 {$updateTime}</h5>" : '';
                 $_host      = z::host();
                 $url        = self::formatUrl($data['url'], '');
-                $methodType = (z::arrayGet($data, 'type') ?: 'AT_WILL');
+                $methodType = (z::arrayGet($data, 'type') ?: 'ANY');
                 $toColor    = self::toColor($methodType);
                 echo <<<DD
 <div class="page-header"><h2>{$data['title']}<h4>{$data['desc']}</h4>{$updateTime}<h5><a target="_blank" title="复制接口地址" onclick="copyUrl('{$_host}{$url}')"><button type="button" class="btn btn-{$toColor} btn-xs type-btn">{$methodType}</button>
@@ -444,7 +445,6 @@ DD;
                 echo '</table></div>';
                 $returnHtml = $returnJson = '';
                 if ($data['return']) {
-
                     echo '<h3>返回示例</h3>';
                     foreach ($data['return'] as $return) {
                         if (is_string($return)) {
@@ -479,7 +479,7 @@ DD;
                         $updateTime = z::arrayGet($v, 'time', '--');
                         $url        = self::formatUrl($v['url'], "?_type={$methodType}&_api=self{$token}");
                         $url        .= ($class['class']['key']) ? '&_key=' . $class['class']['key'] : '';
-                        echo '<tr><td><button title="复制接口地址" onclick="copyUrl(\'' . $v['url'] . '\')" type="button" class="btn btn-' . $toColor . ' btn-xs type-btn">' . ($methodType ?: 'AT_WILL') . '</button> <a title="查看接口详情" href="' . $url . '" target="_blank">' . $v['url'] . '</a></td><td>' . $v['title'] . '</td><td>' . $updateTime . '</td><td>' . $v['desc'] . '</td></tr>';
+                        echo '<tr><td><button title="复制接口地址" onclick="copyUrl(\'' . $v['url'] . '\')" type="button" class="btn btn-' . $toColor . ' btn-xs type-btn">' . ($methodType ?: 'ANY') . '</button> <a title="查看接口详情" href="' . $url . '" target="_blank">' . $v['url'] . '</a></td><td>' . $v['title'] . '</td><td>' . $updateTime . '</td><td>' . $v['desc'] . '</td></tr>';
                     }
                     echo '</tbody></table></div>';
                 }

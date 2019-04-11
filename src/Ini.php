@@ -20,11 +20,10 @@ class Ini
     {
         $config = [''];
         foreach ($content as $namespace => $properties) {
-            $config[] = '['.$namespace.']';
+            $config[] = '[' . $namespace . ']';
             $config[] = $this->valueHandle($properties);
             $config[] = '';
         }
-
         return join(PHP_EOL, $config);
     }
 
@@ -35,11 +34,17 @@ class Ini
             if (is_array($value)) {
                 $result[] = $this->valueHandle($value, $key);
             } else {
-                $result[] = ($name ? $name.'[]' : $key).' = '.(is_numeric($value) ? $value : "'{$value}'");
+                switch ($value) {
+                    case \z::checkValue($value, 'num'):
+                    case 'true':
+                    case 'false':
+                        break;
+                    default:
+                        $value =  "'{$value}'";
+                }
+                $result[] = ($name ? $name . '[]' : $key) . " = {$value}";
             }
         }
-        $result[] = '';
-
         return join(PHP_EOL, $result);
     }
 }
