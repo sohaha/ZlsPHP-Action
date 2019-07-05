@@ -5,11 +5,9 @@ namespace Zls\Action;
 use Z;
 
 /**
- * 生成Api文档.
- * @author        影浅-Seekwe
- * @email         seekwe@gmail.com
- * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- * @updatetime    2018-12-4 18:03:00
+ * Class ApiDoc
+ * @package       Zls\Action
+ * @author        影浅 <seekwe@gmail.com>
  */
 class ApiDoc
 {
@@ -112,6 +110,7 @@ class ApiDoc
      * @param null   $controller
      * @param string $hmvcName
      * @param bool   $library
+     *
      * @return array|bool
      * @throws \ReflectionException
      */
@@ -147,6 +146,7 @@ class ApiDoc
     /**
      * @param      $className
      * @param null $access
+     *
      * @return array
      * @throws \ReflectionException
      */
@@ -193,9 +193,11 @@ class ApiDoc
 
     /**
      * 扫描class.
+     *
      * @param string $controller
      * @param string $setKey
      * @param string $hmvc
+     *
      * @return array|bool
      * @throws \ReflectionException
      */
@@ -242,16 +244,31 @@ class ApiDoc
         return $docInfo;
     }
 
-    private static function getDocInfo($str, $key, $resultStr = true)
+    private static function getDocInfo($str, $key, $resultStr = true, $defaultRes = '')
     {
+        $res = $defaultRes;
+        if (false === stripos($str, '@')) {
+            return $res;
+        }
         $keys = ["@{$key} ", "@api-{$key} "];
-        $res  = '';
         foreach ($keys as $value) {
             $len = strlen($value);
             if (false !== (stripos($str, $value))) {
                 $pos = (z::strBeginsWith($value, '@api-')) ? $len - 4 : $len;
-                $res = $resultStr ? trim(substr(trim(substr($str, strpos($str, '*') + 1)), $len)) : [trim($value), $pos];
+                $res = $resultStr ? trim(mb_substr(trim(substr($str, strpos($str, '*') + 1)), $len)) : [trim($value), $pos];
                 break;
+            } else {
+                $value = rtrim($value);
+                if (Z::strEndsWith($str, $value)) {
+                    return '';
+                } elseif ($s = mb_strpos($str, '(')) {
+                    $e = mb_strrpos($str, ')');
+                    if ($s !== $e) {
+                        $t   = mb_substr($str, $s + 1, $e - $s - 1);
+                        $res = $t;
+                        break;
+                    }
+                }
             }
         }
 
@@ -264,6 +281,7 @@ class ApiDoc
      * @param bool   $paramsStatus
      * @param string $hmvcName
      * @param bool   $library
+     *
      * @return bool
      * @throws \ReflectionException
      */
@@ -282,10 +300,10 @@ class ApiDoc
             $docInfo['url'] = (!$library) ?
                 z::url(
                     '/'
-                        . str_replace('_', '/', substr($controller, $substrStart))
-                        . '/'
-                        . substr($method, strlen(z::config()->getMethodPrefix()))
-                        . z::config()->getMethodUriSubfix()
+                    . str_replace('_', '/', substr($controller, $substrStart))
+                    . '/'
+                    . substr($method, strlen(z::config()->getMethodPrefix()))
+                    . z::config()->getMethodUriSubfix()
                 ) : $method;
         } else {
             $hmvcName       = (bool)$hmvcName ? '/' . $hmvcName : '';
@@ -332,6 +350,32 @@ class ApiDoc
         }
 
         return $docInfo;
+    }
+
+    public static function resolveComment($commentTest = '')
+    {
+        $doctArr = explode("\n", $commentTest);
+        array_pop($doctArr);
+        array_shift($doctArr);
+        $comments = [];
+        foreach ($doctArr as $comment) {
+            if ($comment === "") {
+                continue;
+            }
+            $comments[] = $comment;
+        }
+        unset($doctArr);
+
+        return function ($key, $explode = false) use ($comments) {
+            foreach ($comments as $comment) {
+                $content = self::getDocInfo($comment, $key, true, null);
+                if (!is_null($content)) {
+                    return $explode ? explode(' ', $content) : $content;
+                }
+            }
+
+            return null;
+        };
     }
 
     private static function getParams($pos, $comment, $type = 'return', $restfulType = null)
