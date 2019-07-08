@@ -2,6 +2,9 @@
 
 namespace Zls\Action;
 
+use Closure;
+use ReflectionClass;
+use ReflectionException;
 use Z;
 
 /**
@@ -42,7 +45,7 @@ class ApiDoc
 
     /**
      * @return array
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public static function all()
     {
@@ -112,7 +115,7 @@ class ApiDoc
      * @param bool   $library
      *
      * @return array|bool
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public static function docComment($controller = null, $hmvcName = '', $library = false, $filetime = null)
     {
@@ -148,11 +151,11 @@ class ApiDoc
      * @param null $access
      *
      * @return array
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public static function getMethods($className, $access = null)
     {
-        $class     = new \ReflectionClass($className);
+        $class     = new ReflectionClass($className);
         $methods   = $class->getMethods();
         $returnArr = [];
         foreach ($methods as $value) {
@@ -199,14 +202,14 @@ class ApiDoc
      * @param string $hmvc
      *
      * @return array|bool
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     private static function apiClass($controller, $setKey = null, $hmvc = '')
     {
         if (!class_exists($controller)) {
             return false;
         }
-        $rClass                = new \ReflectionClass($controller);
+        $rClass                = new ReflectionClass($controller);
         $dComment              = $rClass->getDocComment();
         $docInfo               = [
             'title'      => null,
@@ -281,9 +284,11 @@ class ApiDoc
      * @param bool   $paramsStatus
      * @param string $hmvcName
      * @param bool   $library
+     * @param string $methodType
+     * @param null   $filetime
      *
      * @return bool
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public static function apiMethods($controller, $method = null, $paramsStatus = false, $hmvcName = '', $library = false, $methodType = '', $filetime = null)
     {
@@ -317,132 +322,20 @@ class ApiDoc
         $docInfo['type']   = $methodType;
         $dComment          = $rMethod->getDocComment();
         if (false !== $dComment) {
-            $doctArr          = explode("\n", $dComment);
-            $comment          = trim($doctArr[1]);
-            $docInfo['title'] = trim(substr($comment, strpos($comment, '*') + 1));
-            foreach ($doctArr as $comment) {
-                if ($desc = self::getDocInfo($comment, 'desc')) {
-                    $docInfo['desc'] = trim($desc);
-                    continue;
-                }
-                if ($desc = self::getDocInfo($comment, 'time')) {
-                    $docInfo['time'] = trim($desc);
-                    continue;
-                }
-                if ((bool)$paramsStatus) {
-                    if ($return = self::getDocInfo($comment, 'return', false)) {
-                        if ($_return = self::getParams($return[1], $comment, $return[0])) {
-                            $docInfo['return'][] = $_return;
-                        }
-                        continue;
-                    }
-                    if ($return = self::getDocInfo($comment, 'param', false)) {
-                        if ($_param = self::getParams($return[1], $comment, $return[0], $methodType)) {
-                            $docInfo['param'][] = $_param;
-                        }
-                        continue;
-                    }
-                }
-            }
+            $doctArr           = explode("\n", $dComment);
+            $comment           = trim($doctArr[1]);
+            $docInfo['title']  = trim(substr($comment, strpos($comment, '*') + 1));
+            $comment           = self::getCommentParameter($dComment);
+            $docInfo['param']  = self::formatCommentParameter($comment);
+            $docInfo['return'] = self::formatCommentReturn($comment);
+            $docInfo['time']   = self::formatParameter('time', $comment);
+            $docInfo['desc']   = Z::arrayGet(self::formatParameter('desc', $comment), '0.0', '');
         }
-        if (!Z::arrayKeyExists('time', $docInfo)) {
+        if (!Z::arrayGet('time', $docInfo)) {
             $docInfo['time'] = $filetime;
         }
 
         return $docInfo;
-    }
-
-    public static function resolveComment($commentTest = '')
-    {
-        $doctArr = explode("\n", $commentTest);
-        array_pop($doctArr);
-        array_shift($doctArr);
-        $comments = [];
-        foreach ($doctArr as $comment) {
-            if ($comment === "") {
-                continue;
-            }
-            $comments[] = $comment;
-        }
-        unset($doctArr);
-
-        return function ($key, $explode = false) use ($comments) {
-            foreach ($comments as $comment) {
-                $content = self::getDocInfo($comment, $key, true, null);
-                if (!is_null($content)) {
-                    return $explode ? explode(' ', $content) : $content;
-                }
-            }
-
-            return null;
-        };
-    }
-
-    private static function getParams($pos, $comment, $type = 'return', $restfulType = null)
-    {
-        if (!$restfulType) {
-            $restfulType = 'GET';
-        }
-        $retArr = explode(' ', substr($comment, $pos + strlen($type)));
-        $retArr = array_values(array_filter($retArr, function ($v) {
-            return '' !== $v;
-        }));
-        $count  = count($retArr);
-        if ($count < 2) {
-            return false;
-        }
-        $isReturn = Z::strEndsWith($type, 'return');
-        if ($isReturn && ('json' == $retArr[0] || 'object' == $retArr[0] || 'array' == $retArr[0])) {
-            $data = json_decode(implode(' ', array_slice($retArr, 1)), true);
-            if (is_array($data)) {
-                return (bool)$data ? implode(' ', array_slice($retArr, 1)) : false;
-            }
-        }
-        $retArr = array_merge(array_filter($retArr, function ($e) {
-            return '' == $e ? false : true;
-        }));
-        $ret    = [];
-        if ($isReturn) {
-            $ret['title'] = z::arrayGet($retArr, 2, '--');
-            $ret['desc']  = implode(' ', array_slice($retArr, 3));
-        } else {
-            $ret['title']   = z::arrayGet($retArr, 2, '--');
-            $query          = strtoupper(trim(z::arrayGet($retArr, 3)));
-            $query          = z::arrayMap(explode('|', $query), function ($query) use ($restfulType) {
-                $query = trim($query);
-                $query = $query && !in_array($query, ['', '\'\'', '""', '-']) ? $query : '';
-                $_P    = 'Post-FormDate';
-                $_G    = 'Get';
-                $_R    = 'Raw';
-                $_RT   = 'Raw-Text';
-                $_RJ   = 'Raw-Json';
-                $_F    = 'FormDate';
-
-                return Z::arrayGet([
-                    'P'    => $_P,
-                    'POST' => $_P,
-                    'G'    => $_G,
-                    'GET'  => $_G,
-                    'F'    => $_F,
-                    'FORM' => $_F,
-                    'J'    => $_RJ,
-                    'JSON' => $_RJ,
-                    'T'    => $_RT,
-                    'TEXT' => $_RT,
-                    'R'    => $_R,
-                    'RAW'  => $_R,
-                ], strtoupper($query), $query);
-            });
-            $ret['query']   = join('|', $query);
-            $default        = z::arrayGet($retArr, 4, '');
-            $ret['default'] = ('""' === $default || '\'\'' === $default) ? '' : $default;
-            $ret['is']      = ('N' == strtoupper(trim(z::arrayGet($retArr, 5))) || 'NO' == strtoupper(trim(z::arrayGet($retArr, 5)))) ? '否' : '是';
-            $ret['desc']    = implode(' ', array_slice($retArr, 6));
-        }
-        $ret['name'] = z::arrayGet($retArr, 1, '--');
-        $ret['type'] = z::arrayGet(self::$TYPEMAPS, $retArr[0], $retArr[0]);
-
-        return $ret;
     }
 
     private static function toColor($type)
@@ -451,7 +344,7 @@ class ApiDoc
     }
 
     /**
-     * @param string $type
+     * @param string $type 类型
      * @param        $data
      */
     public static function html($type = 'parent', $data)
@@ -584,4 +477,234 @@ DD;
 
         return $result;
     }
+
+    private static $commentRegex = '/([a-z_\\][a-z0-9_\:\\]*[\x{4e00}-\x{9fa5}a-z_][\*\x{4e00}-\x{9fa5}a-z0-9_-]*)|((?:[+-]?[0-9]+(?:[\.][0-9]+)*)(?:[eE][+-]?[0-9]+)?)|("(?:""|[^"])*+")|\s+|\*+|(.)/iu';
+
+    /**
+     * @param $class
+     * @param $method
+     *
+     * @return Closure
+     * @throws ReflectionException
+     */
+    public static function getMethodComment($class, $method)
+    {
+        $ref       = new ReflectionClass($class);
+        $comment   = $ref->getMethod($method)->getDocComment();
+        $parameter = self::getCommentParameter($comment);
+
+        return function ($key = null, $involvePrefix = true) use ($parameter) {
+            return $key ? self::formatParameter($key, $parameter, $involvePrefix) : $parameter;
+        };
+    }
+
+    public static function formatParameter($key, array $parameter, $involvePrefix = true, $trim = '"')
+    {
+        $prefixKey = 'api-' . $key;
+        $values    = null;
+        if (Z::arrayKeyExists($key, $parameter)) {
+            $values = Z::arrayGet($parameter, $key, []);
+        }
+        if ($involvePrefix && Z::arrayKeyExists($prefixKey, $parameter)) {
+            $values = array_merge($values ?: [], Z::arrayGet($parameter, $prefixKey, []));
+        }
+        if (is_array($values)) {
+            foreach ($values as &$value) {
+                if ($value) {
+                    if ($trim) {
+                        foreach ($value as &$vv) {
+                            if (substr($vv, 0, 1) === $trim && substr($vv, -1, 1) === $trim) {
+                                $vv = trim($vv, '"');
+                            }
+                        }
+                    }
+                    if (Z::arrayGet($value, 0) === '(' && Z::arrayGet($value, count($value) - 1) === ')') {
+                        array_shift($value);
+                        array_pop($value);
+                        $newValue = [];
+                        foreach ($value as $k => $nv) {
+                            if (in_array($nv, ['(', ')', ','])) {
+                                continue;
+                            }
+                            $next = Z::arrayGet($value, $k + 1);
+                            if ($next === '=') {
+                                $newValue[$nv] = $value[$k + 2];
+                                $value[$k + 2] = $value[$k + 1] = ',';
+                            } else {
+                                $newValue[] = $nv;
+                            }
+                        }
+                        $value = $newValue;
+                    }
+                }
+            }
+        }
+
+        return $values;
+    }
+
+    public static function resolveComment($comment)
+    {
+        $flags   = PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE;
+        $matches = preg_split(self::$commentRegex, $comment, -1, $flags);
+        $tokens  = [];
+        if (false === $matches) {
+            $matches = [[$comment, 0]];
+        }
+        foreach ($matches as $match) {
+            $tokens[] = [
+                'value'    => $match[0],
+                'position' => $match[1],
+            ];
+        }
+
+        return $tokens;
+    }
+
+    private static function formatCommentReturn($comment)
+    {
+        $return = self::formatParameter('return', $comment, true, '');
+        $data   = [];
+        foreach ($return as $rs) {
+            if (strtolower(Z::arrayGet($rs, 0, '')) === 'json') {
+                $data[] = implode('', Z::arrayFilter(array_slice($rs, 1), function ($v) {
+                    return $v !== '*';
+                }));
+            } elseif (isset($rs[1])) {
+                $k      = 0;
+                $type   = Z::arrayGet($rs, $k++, '');
+                $name   = Z::arrayGet($rs, $k++, '');
+                $title  = Z::arrayGet($rs, $k++, '');
+                $desc   = implode(' ', array_slice($rs, $k));
+                $data[] = [
+                    'title' => $title,
+                    'name'  => $name,
+                    'type'  => z::arrayGet(self::$TYPEMAPS, $type, $type),
+                    'desc'  => $desc,
+                ];
+            }
+        }
+
+        return $data;
+    }
+
+    private static function formatCommentParameter($comment, $RESTful = 'param')
+    {
+        $params   = self::formatParameter($RESTful, $comment);
+        $data     = [];
+        $isParent = $RESTful === 'param';
+        if ($isParent) {
+            foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'COPY', 'HEAD', 'OPTIONS', 'LINK', 'UNLINK', 'PURGE'] as $method) {
+                $data = array_merge($data, self::formatCommentParameter($comment, strtolower($method)));
+            }
+        }
+        if (is_null($params)) {
+            return $data;
+        }
+        foreach ($params as $param) {
+            $k    = 0;
+            $type = Z::arrayGet($param, $k++, '');
+            $name = Z::arrayGet($param, $k++, '');
+            if (!$name) {
+                continue;
+            }
+            $title   = Z::arrayGet($param, $k++, '');
+            $query   = z::arrayMap(explode('|', $isParent ? Z::arrayGet($param, $k++, 'GET') : $RESTful), function ($query) {
+                $query = trim($query);
+                $query = $query && !in_array($query, ['', '\'\'', '""', '-']) ? $query : '';
+                $_P    = 'Post-FormDate';
+                $_G    = 'Get';
+                $_R    = 'Raw';
+                $_RT   = 'Raw-Text';
+                $_RJ   = 'Raw-Json';
+                $_F    = 'FormDate';
+
+                return Z::arrayGet([
+                    'P'    => $_P,
+                    'POST' => $_P,
+                    'G'    => $_G,
+                    'GET'  => $_G,
+                    'F'    => $_F,
+                    'FORM' => $_F,
+                    'J'    => $_RJ,
+                    'JSON' => $_RJ,
+                    'T'    => $_RT,
+                    'TEXT' => $_RT,
+                    'R'    => $_R,
+                    'RAW'  => $_R,
+                ], strtoupper($query), ucwords($query));
+            });
+            $query   = join('|', $query);
+            $default = Z::arrayGet($param, $k++, '');
+            $is      = strtoupper(Z::arrayGet($param, $k++, ''));
+            $is      = in_array($is, ['N', 'NO']) ? '否' : '是';
+            $desc    = implode(' ', array_slice($param, $k));
+            $data[]  = [
+                'title'   => $title,
+                'name'    => $name,
+                'type'    => z::arrayGet(self::$TYPEMAPS, $type, $type),
+                'query'   => $query,
+                'default' => $default,
+                'is'      => $is,
+                'desc'    => $desc,
+            ];
+        }
+
+        return $data;
+    }
+
+    public static function getCommentParameter($commentStr)
+    {
+        $pos          = self::findPosition($commentStr);
+        $commentStr   = trim(substr($commentStr, $pos), '* /');
+        $comments     = self::resolveComment($commentStr);
+        $parametes    = [];
+        $jumpKey      = [];
+        $currentKey   = null;
+        $currentIndex = 0;
+        foreach ($comments as $k => &$comment) {
+            if (!in_array($k, $jumpKey, true)) {
+                $value = $comment['value'];
+                $nextK = $k + 1;
+                $next  = Z::arrayGet($comments, $nextK, ['value' => '']);
+                if ($value === '@') {
+                    if (!$next) {
+                        continue;
+                    }
+                    $jumpKey[] = $nextK;
+                    $key       = $next['value'];
+                    if (!isset($parametes[$key])) {
+                        $parametes[$key] = [];
+                        $currentIndex    = 0;
+                    } else {
+                        $currentIndex++;
+                    }
+                    $currentKey = $key;
+                } elseif ($value === '*' && ($next['value'] === '@' || $next['value'] === '*' || substr($commentStr, $comment['position'] + 1, 1) === "\n")) {
+                    continue;
+                } else {
+
+                    $parametes[$currentKey][$currentIndex][] = $comment['value'];
+                }
+            }
+        }
+
+        return $parametes;
+    }
+
+    public static function findPosition($comment)
+    {
+        $pos = 0;
+        while (($pos = strpos($comment, '@', $pos)) !== false) {
+            $preceding = substr($comment, $pos - 1, 1);
+            if ($pos === 0 || $preceding === ' ' || $preceding === '*' || $preceding === "\t") {
+                return $pos;
+            }
+            $pos++;
+        }
+
+        return null;
+    }
+
+
 }

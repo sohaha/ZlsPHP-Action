@@ -21,6 +21,7 @@ class Id
 
     /**
      * 设置前缀
+     *
      * @param $prefix
      */
     public function setPrefix($prefix)
@@ -31,8 +32,10 @@ class Id
     /**
      * uniqueId
      * 生成16位以上唯一ID.
+     *
      * @param int    $length 不含前后缀的长度，最小14，建议16+
      * @param string $subfix 后缀
+     *
      * @return string $id
      */
     public function uniqueId($length = 16, $subfix = '')
@@ -53,6 +56,7 @@ class Id
                 $id .= $mtRand();
             }
         } elseif (function_exists('openssl_random_pseudo_bytes')) {
+            /** @noinspection PhpComposerExtensionStubsInspection */
             $id .= substr(bin2hex(openssl_random_pseudo_bytes(ceil($addLength / 2))), 0, $addLength);
         } else {
             $id .= $mtRand();
