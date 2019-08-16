@@ -485,13 +485,42 @@ DD;
      * @param $method
      *
      * @return Closure
-     * @throws ReflectionException
      */
-    public static function getMethodComment($class, $method)
+    public static function getComment($class, $method = '', $merge = true, $cacheTime = 0)
     {
-        $ref       = new ReflectionClass($class);
-        $comment   = $ref->getMethod($method)->getDocComment();
-        $parameter = self::getCommentParameter($comment);
+        if (is_object($class)) {
+            $cacheKey = __METHOD__ . '_' . (get_class($class)) . "_" . $method;
+        } else {
+            $cacheKey = __METHOD__ . '_' . $class . "_" . $method;
+        }
+        $cacheKey = md5($cacheKey);
+        $cache    = Z::cache();
+        if (!(!!$cacheTime && ($parameter = $cache->get($cacheKey)))) {
+            try {
+                $ref       = new ReflectionClass($class);
+                $parameter = $methodParameter = $classParameter = [];
+                if (($merge && $method) || !$method) {
+                    $comment        = $ref->getDocComment();
+                    $classParameter = self::getCommentParameter($comment);
+                    $parameter      = $classParameter;
+                }
+                if ($method) {
+                    $comment         = $ref->getMethod($method)->getDocComment();
+                    $methodParameter = self::getCommentParameter($comment);
+                    foreach ($methodParameter as $k => $v) {
+                        $parameterArr = z::arrayGet($parameter, $k);
+                        if (is_array($parameterArr)) {
+                            $parameter[$k] = array_merge($parameterArr, $v);
+                        } else {
+                            $parameter[$k] = $v;
+                        }
+                    }
+                }
+                $cacheTime && $cache->set($cacheKey, $parameter, $cacheTime);
+            } catch (\ReflectionException $e) {
+                $parameter = [];
+            }
+        }
 
         return function ($key = null, $involvePrefix = true) use ($parameter) {
             return $key ? self::formatParameter($key, $parameter, $involvePrefix) : $parameter;
@@ -571,10 +600,23 @@ DD;
                     return $v !== '*';
                 }));
             } elseif (isset($rs[1])) {
-                $k      = 0;
-                $type   = Z::arrayGet($rs, $k++, '');
-                $name   = Z::arrayGet($rs, $k++, '');
-                $title  = Z::arrayGet($rs, $k++, '');
+                $k    = 0;
+                $type = Z::arrayGet($rs, $k++, '');
+                $name = Z::arrayGet($rs, $k++, '');
+                while (true) {
+                    if ($name === "|") {
+                        $type .= $name;
+                        $name = Z::arrayGet($rs, $k++, '');
+                        $type .= $name;
+                        $name = Z::arrayGet($rs, $k++, '');
+                    } else {
+                        break;
+                    }
+                }
+                if (!$name) {
+                    continue;
+                }
+                $title = Z::arrayGet($rs, $k++, '');
                 $desc   = implode(' ', array_slice($rs, $k));
                 $data[] = [
                     'title' => $title,
