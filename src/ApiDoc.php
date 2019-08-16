@@ -331,8 +331,10 @@ class ApiDoc
             $docInfo['time']   = self::formatParameter('time', $comment);
             $docInfo['desc']   = Z::arrayGet(self::formatParameter('desc', $comment), '0.0', '');
         }
-        if (!Z::arrayGet('time', $docInfo)) {
+        if (!Z::arrayGet($docInfo, 'time')) {
             $docInfo['time'] = $filetime;
+        } elseif (Z::arrayGet($docInfo, 'time.0')) {
+            $docInfo['time'] = join("", $docInfo['time'][0]);
         }
 
         return $docInfo;
@@ -416,7 +418,9 @@ DD;
                         $updateTime = z::arrayGet($v, 'time', '--');
                         $url        = self::formatUrl($v['url'], "?_type={$methodType}&_api=self{$token}");
                         $url        .= ($class['class']['key']) ? '&_key=' . $class['class']['key'] : '';
-                        echo '<tr><td><button title="复制接口地址" onclick="copyUrl(\'' . $v['url'] . '\')" type="button" class="btn btn-' . $toColor . ' btn-xs type-btn">' . ($methodType ?: 'ANY') . '</button> <a title="查看接口详情" href="' . $url . '" target="_blank">' . $v['url'] . '</a></td><td>' . $v['title'] . '</td><td>' . $updateTime . '</td><td>' . $v['desc'] . '</td></tr>';
+                        if ($v) {
+                            echo '<tr><td><button title="复制接口地址" onclick="copyUrl(\'' . $v['url'] . '\')" type="button" class="btn btn-' . $toColor . ' btn-xs type-btn">' . ($methodType ?: 'ANY') . '</button> <a title="查看接口详情" href="' . $url . '" target="_blank">' . $v['url'] . '</a></td><td>' . $v['title'] . '</td><td>' . $updateTime . '</td><td>' . $v['desc'] . '</td></tr>';
+                        }
                     }
                     echo '</tbody></table></div>';
                 }
@@ -530,7 +534,7 @@ DD;
     public static function formatParameter($key, array $parameter, $involvePrefix = true, $trim = '"')
     {
         $prefixKey = 'api-' . $key;
-        $values    = null;
+        $values    = [];
         if (Z::arrayKeyExists($key, $parameter)) {
             $values = Z::arrayGet($parameter, $key, []);
         }
@@ -616,7 +620,7 @@ DD;
                 if (!$name) {
                     continue;
                 }
-                $title = Z::arrayGet($rs, $k++, '');
+                $title  = Z::arrayGet($rs, $k++, '');
                 $desc   = implode(' ', array_slice($rs, $k));
                 $data[] = [
                     'title' => $title,
