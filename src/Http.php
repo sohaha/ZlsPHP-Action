@@ -184,14 +184,14 @@ class Http
             $ch = $this->ch;
         }
         $this->setError(0, '');
-        $type = strtolower($type);
+        $type = strtoupper($type);
         $url  = ltrim($url);
         //$this->curl_max_loops = $maxRedirect;
         if ($this->defineIp) {
             $header = $header ? array_merge($this->defineIp, $header) : $this->defineIp;
         }
         curl_setopt($ch, CURLOPT_USERAGENT, $this->userAgent);
-        if ('post' == $type) {
+        if ('GET' !== $type) {
             $header = empty($header) ? [] : $header;
             curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge(['Expect:'], $header));
             curl_setopt($ch, CURLOPT_POST, 1);
@@ -242,6 +242,7 @@ class Http
         }
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $type);
         $this->lastUrl = $url;
         if (!$exec) {
             return $ch;
