@@ -56,7 +56,7 @@ class Http
     {
         if (false !== $cookiePath) {
             if (empty($cookiePath)) {
-                $cookiePath   = z::tempPath() . '/' . 'Zls_http_cookie_' . md5(uniqid('', true));
+                $cookiePath   = Z::tempPath() . '/' . 'Zls_http_cookie_' . md5(uniqid('', true));
                 $functionName = 'Zls_clean_' . md5(uniqid('', true));
                 register_shutdown_function(function () use ($cookiePath) {
                     $path = "'.$cookiePath.'";
@@ -96,7 +96,7 @@ class Http
      *
      * @param int $microSeconds
      *
-     * @return \Zls\Action\Http
+     * @return Http
      */
     public function sleep($microSeconds)
     {
@@ -360,7 +360,7 @@ class Http
      */
     public function isRedirect($code = null)
     {
-        if (\is_null($code)) {
+        if (is_null($code)) {
             $code = $this->code();
         }
 
@@ -457,7 +457,7 @@ class Http
      *
      * @param string $referer
      *
-     * @return \Zls\Action\Http
+     * @return Http
      */
     public function setReferer($referer)
     {
@@ -573,7 +573,7 @@ class Http
      * @param string $opt curl_setopt()的第二个参数
      * @param string $val curl_setopt()的第三个参数
      *
-     * @return \Zls\Action\Http
+     * @return Http
      */
     public function setOpt($opt, $val)
     {
@@ -619,11 +619,11 @@ class Http
         $header                    = [];
         $maxRedirect               = 0;
         foreach ($arrUrls as $urlsKey => $strUrlVal) {
-            $_url         = z::arrayGet($strUrlVal, 'url', $strUrlVal);
-            $_type        = z::arrayGet($strUrlVal, 'type', $type);
-            $_data        = z::arrayGet($strUrlVal, 'data', $data);
-            $_header      = z::arrayGet($strUrlVal, 'header', $header);
-            $_maxRedirect = z::arrayGet($strUrlVal, 'maxRedirect', $maxRedirect);
+            $_url         = Z::arrayGet($strUrlVal, 'url', $strUrlVal);
+            $_type        = Z::arrayGet($strUrlVal, 'type', $type);
+            $_data        = Z::arrayGet($strUrlVal, 'data', $data);
+            $_header      = Z::arrayGet($strUrlVal, 'header', $header);
+            $_maxRedirect = Z::arrayGet($strUrlVal, 'maxRedirect', $maxRedirect);
             $ch           = curl_copy_handle($this->ch);
             $ch           = $this->request($_type, $_url, $_data, $_header, $_maxRedirect, $ch, false);
             curl_multi_add_handle($mh, $ch);
@@ -653,13 +653,13 @@ class Http
                         $_key                             = $responsesKeyMap[$strCh];
                         $result                           = compact('curl_info', 'curl_error', 'curl_results');
                         $_curlInfo                        = $result['curl_info'];
-                        $_code                            = z::arrayGet($_curlInfo, 'http_code', 0);
+                        $_code                            = Z::arrayGet($_curlInfo, 'http_code', 0);
                         $_data                            = $result['curl_results'];
                         $_info                            = explode("\r\n\r\n", $_data, 2);
                         $this->responseInfoMulti[$_key]   = $_curlInfo;
                         $this->responseErrorMulti[$_key]  = $result['curl_error'];
-                        $this->responseHeaderMulti[$_key] = z::arrayGet($_info, 0, '');
-                        $arrResponses[$_key]              = z::arrayGet($_info, 1, '');
+                        $this->responseHeaderMulti[$_key] = Z::arrayGet($_info, 0, '');
+                        $arrResponses[$_key]              = Z::arrayGet($_info, 1, '');
                         curl_multi_remove_handle($mh, $multiInfo['handle']);
                         curl_close($multiInfo['handle']);
                     }
@@ -667,7 +667,7 @@ class Http
             } while (CURLM_CALL_MULTI_PERFORM == $mrc);
         }
         curl_multi_close($mh);
-
+        ksort($arrResponses);
         return $arrResponses;
     }
 
@@ -678,13 +678,13 @@ class Http
         if (!$cookie) {
             $cookie = file_exists($this->cookiePath) ? file($this->cookiePath) : [];
         }
-        if (!!z::arrayGet($cookie, 0)) {
+        if (!!Z::arrayGet($cookie, 0)) {
             foreach ($cookie as $line) {
                 if (!substr_count($line, "\t") == 6) {
                     continue;
                 }
                 $tokens = array_map('trim', explode("\t", $line));
-                if ($key = z::arrayGet($tokens, 5)) {
+                if ($key = Z::arrayGet($tokens, 5)) {
                     $cookies[$tokens[5]] = $tokens[6];
                 }
             }
