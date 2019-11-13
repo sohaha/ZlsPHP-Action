@@ -82,8 +82,9 @@ class ApiDoc
      * @param        $arr
      * @param null   $hmvc
      * @param string $Subfix
+     * @param string $namespace
      */
-    public static function listDirApiPhp($dir, &$arr, $hmvc = null, $Subfix = 'Api.php')
+    public static function listDirApiPhp($dir, &$arr, $hmvc = null, $Subfix = 'Api.php', $namespace = 'Controller')
     {
         if (is_dir($dir) && ($dh = opendir($dir))) {
             while (false !== ($file = readdir($dh))) {
@@ -91,14 +92,14 @@ class ApiDoc
                     continue;
                 }
                 $filePath = Z::realPath($dir . '/' . $file);
-                if ((is_dir($filePath))) {
-                    self::listDirApiPhp($dir . $file . '/', $arr, $hmvc);
+                if (is_dir($filePath)) {
+                    self::listDirApiPhp(Z::realPath($dir . $file, true), $arr, $hmvc, $Subfix, $namespace);
                 } else {
                     if (z::strEndsWith($file, $Subfix)) {
-                        $uri       = explode('Controller/', $dir);
+                        $uri       = explode($namespace . '/', $dir);
                         $filemtime = filemtime($filePath);
                         $arr[]     = [
-                            'controller' => 'Controller_' . str_replace('/', '_', $uri[1]) . str_replace('.php', '', $file),
+                            'controller' => $namespace . '_' . str_replace('/', '_', $uri[1]) . str_replace('.php', '', $file),
                             'hmvc'       => $hmvc,
                             'time'       => $filemtime ? date('Y-m-d H:i:s', $filemtime) : '',
                         ];
@@ -482,11 +483,13 @@ DD;
         return $result;
     }
 
-    private static $commentRegex = '/([a-z_\\][a-z0-9_\:\\]*[\x{4e00}-\x{9fa5}a-z_][\*\x{4e00}-\x{9fa5}a-z0-9_-]*)|((?:[+-]?[0-9]+(?:[\.][0-9]+)*)(?:[eE][+-]?[0-9]+)?)|("(?:""|[^"])*+")|\s+|\*+|(.)/iu';
+    private static $commentRegex = '/([a-z_\\][a-z0-9_\:\\]*[\x{4e00}-\x{9fa5}a-z_][\*\x{4e00}-\x{9fa5}a-z0-9_-\|]*)|((?:[+-]?[0-9]+(?:[\.][0-9]+)*)(?:[eE][+-]?[0-9]+)?)|("(?:""|[^"])*+")|\s+|\*+|(.)/iu';
 
     /**
-     * @param $class
-     * @param $method
+     * @param        $class
+     * @param string $method
+     * @param bool   $merge
+     * @param int    $cacheTime
      *
      * @return Closure
      */
