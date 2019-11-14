@@ -332,9 +332,11 @@ class ApiDoc
             $docInfo['time']   = self::formatParameter('time', $comment);
             $docInfo['desc']   = Z::arrayGet(self::formatParameter('desc', $comment), '0.0', '');
         }
-        if (!Z::arrayGet($docInfo, 'time')) {
+
+        if (!Z::arrayKeyExists('time',$docInfo)) {
             $docInfo['time'] = $filetime;
         } elseif (Z::arrayGet($docInfo, 'time.0')) {
+            array_splice($docInfo['time'][0],3,0,[' ']);
             $docInfo['time'] = join("", $docInfo['time'][0]);
         }
 
@@ -353,7 +355,7 @@ class ApiDoc
     public static function html($type = 'parent', $data)
     {
         $token = ((bool)$token = z::get('_token', '', true)) ? '&_token=' . $token : '';
-        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>项目接口文档</title><meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="stylesheet" 
+        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>项目接口文档</title><meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"><link rel="stylesheet"
 href="//cdn.jsdelivr.net/npm/bootstrap@3.2.0/dist/css/bootstrap.min.css"><style>.panel-body,table{word-break:break-all}.type-btn{min-width:62px;}.w30{width:30%}.alert-info{margin-top:10px;}th,td{white-space: nowrap;}.table-box{overflow:auto;margin-bottom: 20px;}table.table{margin:0}</style></head><body><br/><div class="container" style="width:90%">';
         if ((bool)$data) {
             if ('self' == $type) {
