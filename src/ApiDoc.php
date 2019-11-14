@@ -337,7 +337,13 @@ class ApiDoc
             $docInfo['time'] = $filetime;
         } elseif (Z::arrayGet($docInfo, 'time.0')) {
             array_splice($docInfo['time'][0],3,0,[' ']);
-            $docInfo['time'] = join("", $docInfo['time'][0]);
+            $time = join("", $docInfo['time'][0]);
+            $time = strtotime($time);
+            if($time===false){
+                $docInfo['time'] = '';
+            }else{
+                $docInfo['time'] = date('Y-m-d H:i:s',$time);
+            }
         }
 
         return $docInfo;
