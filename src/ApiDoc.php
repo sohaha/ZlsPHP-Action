@@ -330,7 +330,8 @@ class ApiDoc
             $docInfo['param']  = self::formatCommentParameter($comment);
             $docInfo['return'] = self::formatCommentReturn($comment);
             $docInfo['time']   = self::formatParameter('time', $comment);
-            $docInfo['desc']   = Z::arrayGet(self::formatParameter('desc', $comment), '0.0', '');
+            $docInfo['desc']   = Z::arrayGet(self::formatParameter('desc', $comment), '0', '');
+            $docInfo['desc']   = join("", $docInfo['desc']);
         }
         if (!Z::arrayKeyExists('time', $docInfo) || !$docInfo['time']) {
             $docInfo['time'] = $filetime;
@@ -651,7 +652,7 @@ DD;
         $data     = [];
         $isParent = $RESTful === 'param';
         if ($isParent) {
-            foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'COPY', 'HEAD', 'OPTIONS', 'LINK', 'UNLINK', 'PURGE'] as $method) {
+            foreach (['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'COPY', 'HEAD', 'OPTIONS', 'LINK', 'UNLINK', 'PURGE', "FORM"] as $method) {
                 $data = array_merge($data, self::formatCommentParameter($comment, strtolower($method)));
             }
         }
