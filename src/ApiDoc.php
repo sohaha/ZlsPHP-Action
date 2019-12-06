@@ -332,17 +332,17 @@ class ApiDoc
             $docInfo['time']   = self::formatParameter('time', $comment);
             $docInfo['desc']   = Z::arrayGet(self::formatParameter('desc', $comment), '0.0', '');
         }
-
-        if (!Z::arrayKeyExists('time',$docInfo)) {
+        if (!Z::arrayKeyExists('time', $docInfo) || !$docInfo['time']) {
             $docInfo['time'] = $filetime;
         } elseif (Z::arrayGet($docInfo, 'time.0')) {
-            array_splice($docInfo['time'][0],3,0,[' ']);
-            $time = join("", $docInfo['time'][0]);
+            // array_splice($docInfo['time'][0], 3, 0, [' ']);
+            $time = join(" ", $docInfo['time'][0]);
+            $time = str_replace(" :", ":", $time);
             $time = strtotime($time);
-            if($time===false){
+            if ($time === false) {
                 $docInfo['time'] = '';
-            }else{
-                $docInfo['time'] = date('Y-m-d H:i:s',$time);
+            } else {
+                $docInfo['time'] = date('Y-m-d H:i:s', $time);
             }
         }
 
