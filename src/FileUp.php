@@ -49,7 +49,7 @@ class FileUp
         $this->ext = $e;
     }
 
-    public function saveFile($saveName = null, $dir = null)
+    public function saveFile($saveName = null, $dir = null, $batch = null)
     {
         $this->save_name = $saveName;
         $this->dir       = $dir;
@@ -59,9 +59,15 @@ class FileUp
 
             return false;
         }
+        $isBatchUpload = is_array(z::arrayGet($files, 'name'));
+        if ($batch !== null && $isBatchUpload !== $batch) {
+            $this->setError(211, $batch ? '不支持单文件上传' : '不支持批量上传');
+
+            return false;
+        }
         $tmpName     = null;
         $newSaveName = null;
-        if (is_array(z::arrayGet($files, 'name'))) {
+        if ($isBatchUpload) {
             foreach ($files['name'] as $k => $file) {
                 $file = [
                     'name'     => $files['name'][$k],
