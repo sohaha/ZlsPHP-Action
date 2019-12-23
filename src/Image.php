@@ -6,13 +6,10 @@ use Z;
 
 /**
  * 图片缩放处理.
- *
  * @author        影浅
  * @email         seekwe@gmail.com
- *
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- *
- * @see          ---
+ * @see           ---
  * @since         v0.0.1
  * @updatetime    2018-03-19 12:57
  */
@@ -33,7 +30,7 @@ class Image
      *
      * @return \Zls\Action\Image
      */
-    public function import($src)
+    public static function import($src)
     {
         return new self($src);
     }
@@ -54,35 +51,67 @@ class Image
      */
     public function zoom($width = null, $height = null, $percent = null)
     {
-        $image = $this->getImage();
-        $sWidth = $this->imageinfo['width'];
-        $sHeight = $this->imageinfo['height'];
+        $image    = $this->getImage();
+        $sWidth   = $this->imageinfo['width'];
+        $sHeight  = $this->imageinfo['height'];
         $newWidth = $newHeight = 0;
         switch (true) {
-            case (bool) $percent:
-                $newWidth = $sWidth * $percent;
+            case (bool)$percent:
+                $newWidth  = $sWidth * $percent;
                 $newHeight = $sHeight * $percent;
                 break;
-            case (bool) $width && (bool) $height:
-                $newWidth = $width ?: $width;
+            case (bool)$width && (bool)$height:
+                $newWidth  = $width ?: $width;
                 $newHeight = $height ?: $width;
                 break;
-            case (bool) $width:
-                $scale = $width / $sWidth;
-                $newWidth = $width;
+            case (bool)$width:
+                $scale     = $width / $sWidth;
+                $newWidth  = $width;
                 $newHeight = $sHeight * $scale;
                 break;
-            case (bool) $height:
-                $scale = $height / $sHeight;
-                $newWidth = $sWidth * $scale;
+            case (bool)$height:
+                $scale     = $height / $sHeight;
+                $newWidth  = $sWidth * $scale;
                 $newHeight = $height;
                 break;
             default:
                 Z::throwIf(true, 'Exception', 'Image size is invalid');
         }
-        $this->copyImage($image, 0, 0, 0, 0, $newWidth, $newHeight, $this->imageinfo['width'], $this->imageinfo['height']);
+        $this->image               = $this->copyImage($image, 0, 0, 0, 0, $newWidth, $newHeight, $this->imageinfo['width'], $this->imageinfo['height']);
+        $this->imageinfo['width']  = $newWidth;
+        $this->imageinfo['height'] = $newHeight;
 
         return $this;
+    }
+
+    public function setImage($image)
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
+    public function merge(Image $srcIm, $srcX, $srcY, $srcW = null, $srcH = null, $pct = 100)
+    {
+        if (!$this->image) {
+            $this->getImage();
+        }
+        $srcInfo = $srcIm->getinfo();
+        $srcW === null && $srcW = $srcInfo['width'];
+        $srcH === null && $srcW = $srcInfo['height'];
+        $this->imagecopymergeAlpha($this->getImage(), $srcIm->getImage(), 0, 0, $srcX, $srcY, imagesx($this->image), imagesy($this->image), 100);
+
+        return $this;
+    }
+
+    public function imagecopymergeAlpha($dstIm, $srcIm, $dstX, $dstY, $srcX, $srcY, $srcW, $srcH, $pct = 0)
+    {
+        $w   = imagesx($srcIm);
+        $h   = imagesy($srcIm);
+        $cut = imagecreatetruecolor($srcW, $srcH);
+        imagecopy($cut, $dstIm, 0, 0, $dstX, $dstY, $srcW, $srcH);
+        imagecopy($cut, $srcIm, 0, 0, $srcX, $srcY, $srcW, $srcH);
+        imagecopymerge($dstIm, $cut, $dstX, $dstY, $srcX, $srcY, $srcW, $srcH, $pct);
     }
 
     /**
@@ -92,18 +121,18 @@ class Image
     {
         if (!$this->image) {
             z::throwIf(!$this->src, 500, 'The picture does not exist, please execute first ->import($src)');
-            list($width, $height, $type, $attr) = getimagesize($this->src);
+            [$width, $height, $type, $attr] = getimagesize($this->src);
             $this->imageinfo = [
-                'width' => $width,
+                'width'  => $width,
                 'height' => $height,
-                'type' => image_type_to_extension($type, false),
+                'type'   => image_type_to_extension($type, false),
                 'typeId' => $type,
-                'attr' => $attr,
-                'ext' => z::arrayGet(pathinfo($this->src), 'extension'),
+                'attr'   => $attr,
+                'ext'    => z::arrayGet(pathinfo($this->src), 'extension'),
             ];
-            $fun = $this->imageFn($type);
+            $fun             = $this->imageFn($type);
             z::throwIf(!$type, 500, 'temporarily does not support this file format, please use image processing software to convert the image into GIF, JPG, PNG format');
-            $image = $fun($this->src);
+            $image       = $fun($this->src);
             $this->image = $image;
         }
 
@@ -114,16 +143,16 @@ class Image
     {
         $imageTypeToExtension = $imagetype ? image_type_to_extension($imagetype, false) : false;
         if ($imageTypeToExtension) {
-            $imageFn = $prefix.$imageTypeToExtension;
+            $imageFn = $prefix . $imageTypeToExtension;
         } elseif ($ext) {
             switch (true) {
                 case 'jpg' == $ext:
                     $ext = 'jpeg';
                     break;
             }
-            $imageFn = $prefix.$ext;
+            $imageFn = $prefix . $ext;
         } else {
-            $imageFn = $prefix.'jpeg';
+            $imageFn = $prefix . 'jpeg';
         }
 
         return $imageFn;
@@ -132,12 +161,11 @@ class Image
     public function copyImage($image, $nx, $ny, $sx, $sy, $nw, $nh, $width, $height)
     {
         $newImg = imagecreatetruecolor($nw, $nh);
-        $alpha = imagecolorallocatealpha($newImg, 0, 0, 0, 127);
+        $alpha  = imagecolorallocatealpha($newImg, 0, 0, 0, 127);
         imagefill($newImg, $nx, $ny, $alpha);
         $imagecopy = $this->imagecopy;
         $imagecopy($newImg, $image, $nx, $ny, $sx, $sy, $nw, $nh, $width, $height);
         imagesavealpha($newImg, true);
-        $this->image = $newImg;
 
         return $newImg;
     }
@@ -154,22 +182,22 @@ class Image
     public function save($filename = null, $path = '', $type = null)
     {
         $fileinfo = pathinfo($this->src);
-        $newName = function ($filename = '') use ($fileinfo) {
+        $newName  = function ($filename = '') use ($fileinfo) {
             $newExt = $filename ? z::arrayGet(pathinfo($filename), 'extension') : '';
             $oldExt = z::arrayGet($fileinfo, 'extension');
 
-            return $newExt ? $filename : $filename.'.'.$oldExt;
+            return $newExt ? $filename : $filename . '.' . $oldExt;
         };
-        $dirname = z::arrayGet($fileinfo, 'dirname', '');
+        $dirname  = z::arrayGet($fileinfo, 'dirname', '');
         switch (true) {
-            case (bool) $filename && $path:
-                $newFile = z::realPathMkdir($path, true).$newName($filename);
+            case (bool)$filename && $path:
+                $newFile = z::realPathMkdir($path, true) . $newName($filename);
                 break;
-            case (bool) $filename && !$path:
-                $newFile = z::realPathMkdir($dirname, true).$newName($filename);
+            case (bool)$filename && !$path:
+                $newFile = z::realPathMkdir($dirname, true) . $newName($filename);
                 break;
-            case !$filename && (bool) $path:
-                $newFile = z::realPathMkdir($path, true).$newName(z::arrayGet($fileinfo, 'basename'));
+            case !$filename && (bool)$path:
+                $newFile = z::realPathMkdir($path, true) . $newName(z::arrayGet($fileinfo, 'basename'));
                 break;
             case false === $filename:
                 $newFile = false;
@@ -193,16 +221,16 @@ class Image
     {
         $image = $this->getImage();
         if (!$type) {
-            $info = $this->getInfo();
+            $info   = $this->getInfo();
             $newExt = $newFile ? z::arrayGet(pathinfo($newFile), 'extension') : '';
-            $type = $newExt ?: $info['type'];
+            $type   = $newExt ?: $info['type'];
         }
         $type = strtolower($type);
-        if (\in_array($type, ['gif', 'png'])) {
-            $newWidth = imagesx($image);
+        if (in_array($type, ['gif', 'png'])) {
+            $newWidth  = imagesx($image);
             $newHeight = imagesy($image);
-            $newImg = imagecreatetruecolor($newWidth, $newHeight);
-            $alpha = imagecolorallocatealpha($newImg, 0, 0, 0, 127);
+            $newImg    = imagecreatetruecolor($newWidth, $newHeight);
+            $alpha     = imagecolorallocatealpha($newImg, 0, 0, 0, 127);
             imagefill($newImg, 0, 0, $alpha);
             imagecopyresampled($newImg, $image, 0, 0, 0, 0, $newWidth, $newHeight, $newWidth, $newHeight);
             imagesavealpha($newImg, true);
@@ -213,7 +241,7 @@ class Image
         }
         $fun = $this->imageFn(0, $type, 'image');
         if (!$newFile) {
-            Z::header('Content-Type: image/'.$this->imageinfo['type']);
+            Z::header('Content-Type: image/' . $this->imageinfo['type']);
         }
 
         return z::tap($fun($image, $newFile), function () {
