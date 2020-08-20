@@ -9,7 +9,7 @@ use Z;
  *
  * @author        影浅
  * @email         seekwe@gmail.com
- * @updatetime    2019-2-25 13:59:51
+ * @updatetime    2020-08-20 15:58:13
  */
 class CheckRules
 {
@@ -112,10 +112,9 @@ class CheckRules
             },
             'match' => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
                 if (!Z::arrayKeyExists($key, $data) || !Z::arrayKeyExists(0, $args) || !Z::arrayKeyExists(
-                        $args[0],
-                        $data
-                    ) || $value != $data[$args[0]]
-                ) {
+                    $args[0],
+                    $data
+                ) || $value != $data[$args[0]]) {
                     return false;
                 }
 
@@ -229,12 +228,12 @@ class CheckRules
                 $v = (array)$value;
                 foreach ($v as $value) {
                     $okay = 2 == count($args) ? (mb_strlen(
-                                $value,
-                                'UTF-8'
-                            ) >= intval($args[0])) && (mb_strlen(
-                                $value,
-                                'UTF-8'
-                            ) <= intval($args[1])) : false;
+                        $value,
+                        'UTF-8'
+                    ) >= intval($args[0])) && (mb_strlen(
+                        $value,
+                        'UTF-8'
+                    ) <= intval($args[1])) : false;
                     if (!$okay) {
                         return false;
                     }
@@ -475,7 +474,7 @@ class CheckRules
                 $okay = $args[0];
                 foreach ($v as $value) {
                     $okay = !empty($value) ? preg_match(
-                        '/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/',
+                        '/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+(.*)$/',
                         $value
                     ) : $args[0];
                     if (!$okay) {
