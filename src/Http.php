@@ -56,7 +56,7 @@ class Http
     {
         if (false !== $cookiePath) {
             if (empty($cookiePath)) {
-                $cookiePath   = Z::tempPath() . '/' . 'Zls_http_cookie_' . md5(uniqid('', true));
+                $cookiePath = Z::tempPath() . '/' . 'Zls_http_cookie_' . md5(uniqid('', true));
                 $functionName = 'Zls_clean_' . md5(uniqid('', true));
                 register_shutdown_function(function () use ($cookiePath) {
                     $path = "'.$cookiePath.'";
@@ -152,10 +152,10 @@ class Http
     /**
      * 使用GET方式请求一个页面.
      *
-     * @param string     $url         页面地址
-     * @param array|null $data        要发送的数据数组或者原始数据，比如：array('user'=>'test','pass'=>'354534'),键是表单字段名称，值是表单字段的值，默认 null
-     * @param array|null $header      附加的HTTP头，比如：array('Connection:keep-alive','Cache-Control:max-age=0')，注意冒号前后不能有空格，默认 null
-     * @param int        $maxRedirect 遇到301或302时跳转的最大次数 ，默认 0 不跳转
+     * @param string $url 页面地址
+     * @param array|null $data 要发送的数据数组或者原始数据，比如：array('user'=>'test','pass'=>'354534'),键是表单字段名称，值是表单字段的值，默认 null
+     * @param array|null $header 附加的HTTP头，比如：array('Connection:keep-alive','Cache-Control:max-age=0')，注意冒号前后不能有空格，默认 null
+     * @param int $maxRedirect 遇到301或302时跳转的最大次数 ，默认 0 不跳转
      *
      * @return string 页面数据
      */
@@ -169,12 +169,12 @@ class Http
      *
      * @param string $type
      * @param string $url
-     * @param array  $data
-     * @param array  $header
-     * @param int    $maxRedirect
-     * @param null   $ch       手动设置curl_init
-     * @param bool   $exec     是否直接返回curl_init对象
-     * @param bool   $atUpload 开启@前缀自动上传文件
+     * @param array $data
+     * @param array $header
+     * @param int $maxRedirect
+     * @param null $ch 手动设置curl_init
+     * @param bool $exec 是否直接返回curl_init对象
+     * @param bool $atUpload 开启@前缀自动上传文件
      *
      * @return int|resource
      */
@@ -185,7 +185,7 @@ class Http
         }
         $this->setError(0, '');
         $type = strtoupper($type);
-        $url  = ltrim($url);
+        $url = ltrim($url);
         //$this->curl_max_loops = $maxRedirect;
         if ($this->defineIp) {
             $header = $header ? array_merge($this->defineIp, $header) : $this->defineIp;
@@ -236,7 +236,7 @@ class Http
             if (!empty($_data)) {
                 $imchar = false !== stripos($url, '?') ? '&' : '?';
                 $imchar .= implode('&', $_data);
-                $url    .= $imchar;
+                $url .= $imchar;
             }
             curl_setopt($ch, CURLOPT_POST, 0);
         }
@@ -268,7 +268,7 @@ class Http
     private function setError($error_code, $error_msg)
     {
         $this->error['code'] = $error_code;
-        $this->error['msg']  = $error_msg;
+        $this->error['msg'] = $error_msg;
 
         return $this;
     }
@@ -301,10 +301,10 @@ class Http
             $data = curl_exec($this->ch);
             $this->reset();
             if (!curl_errno($this->ch)) {
-                $info                 = explode("\r\n\r\n", $data, 2);
+                $info = explode("\r\n\r\n", $data, 2);
                 $this->responseHeader = isset($info[0]) ? $info[0] : '';
-                $this->responseBody   = isset($info[1]) ? $info[1] : '';
-                $this->responseInfo   = curl_getinfo($this->ch);
+                $this->responseBody = isset($info[1]) ? $info[1] : '';
+                $this->responseInfo = curl_getinfo($this->ch);
                 //$this->setData(explode("\r\n\r\n", $data, 2), $ch);
                 if (!$this->isRedirect()) {
                     $this->setError(0, '');
@@ -405,11 +405,11 @@ class Http
     private function setData($info, &$ch)
     {
         $this->responseHeader = isset($info[0]) ? $info[0] : '';
-        $this->responseBody   = isset($info[1]) ? $info[1] : '';
-        $this->responseInfo   = curl_getinfo($ch);
-        $cookie               = curl_getinfo($ch, CURLINFO_COOKIELIST);
-        $header               = explode("\n", $this->responseHeader);
-        $setcookie            = [];
+        $this->responseBody = isset($info[1]) ? $info[1] : '';
+        $this->responseInfo = curl_getinfo($ch);
+        $cookie = curl_getinfo($ch, CURLINFO_COOKIELIST);
+        $header = explode("\n", $this->responseHeader);
+        $setcookie = [];
         foreach ($header as $part) {
             $middle = explode(':', $part);
             if (trim($middle[0]) === 'Set-Cookie') {
@@ -439,11 +439,11 @@ class Http
     /**
      * 使用POST方式请求一个页面.
      *
-     * @param string     $url         页面地址
-     * @param array|null $data        要发送的数据数组，比如：array('user'=>'test','pass'=>'354534'),键是表单字段名称，值是表单字段的值，默认 null
-     * @param array|null $header      附加的HTTP头，比如：array('Connection:keep-alive','Cache-Control:max-age=0')，注意冒号前后不能有空格，默认 null
-     * @param int        $maxRedirect 遇到301或302时跳转的最大次数 ，默认 0 不跳转
-     * @param bool       $atUpload
+     * @param string $url 页面地址
+     * @param array|null $data 要发送的数据数组，比如：array('user'=>'test','pass'=>'354534'),键是表单字段名称，值是表单字段的值，默认 null
+     * @param array|null $header 附加的HTTP头，比如：array('Connection:keep-alive','Cache-Control:max-age=0')，注意冒号前后不能有空格，默认 null
+     * @param int $maxRedirect 遇到301或302时跳转的最大次数 ，默认 0 不跳转
+     * @param bool $atUpload
      *
      * @return string 页面数据
      */
@@ -600,36 +600,35 @@ class Http
      * 多线程请求
      *
      * @param array $arrUrls
-     * @param int   $usleep 等待时间、毫秒
+     * @param int $usleep 等待时间、毫秒
      *
      * @return array|bool
      */
     public function multi($arrUrls = [], $usleep = 100)
     {
-        $this->responseInfoMulti   = [];
-        $this->responseErrorMulti  = [];
+        $this->responseInfoMulti = [];
+        $this->responseErrorMulti = [];
         $this->responseHeaderMulti = [];
-        $mh                        = curl_multi_init();
-        $chs                       = [];
-        $responsesKeyMap           = [];
-        $arrResponses              = [];
-        $ch                        = null;
-        $type                      = 'get';
-        $data                      = [];
-        $header                    = [];
-        $maxRedirect               = 0;
+        $mh = curl_multi_init();
+        $responsesKeyMap = [];
+        $arrResponses = [];
+        $ch = null;
+        $type = 'get';
+        $data = [];
+        $header = [];
+        $maxRedirect = 0;
         foreach ($arrUrls as $urlsKey => $strUrlVal) {
-            $_url         = Z::arrayGet($strUrlVal, 'url', $strUrlVal);
-            $_type        = Z::arrayGet($strUrlVal, 'type', $type);
-            $_data        = Z::arrayGet($strUrlVal, 'data', $data);
-            $_header      = Z::arrayGet($strUrlVal, 'header', $header);
+            $_url = Z::arrayGet($strUrlVal, 'url', $strUrlVal);
+            $_type = Z::arrayGet($strUrlVal, 'type', $type);
+            $_data = Z::arrayGet($strUrlVal, 'data', $data);
+            $_header = Z::arrayGet($strUrlVal, 'header', $header);
             $_maxRedirect = Z::arrayGet($strUrlVal, 'maxRedirect', $maxRedirect);
-            $ch           = curl_copy_handle($this->ch);
-            $ch           = $this->request($_type, $_url, $_data, $_header, $_maxRedirect, $ch, false);
+            $this->_autoReferer();
+            $ch = curl_copy_handle($this->ch);
+            $ch = $this->request($_type, $_url, $_data, $_header, $_maxRedirect, $ch, false);
             curl_multi_add_handle($mh, $ch);
-            $strCh                   = (string)$ch;
+            $strCh = (string)$ch;
             $responsesKeyMap[$strCh] = $urlsKey;
-            $chs[$urlsKey]           = $ch;
         }
         $active = null;
         do {
@@ -646,20 +645,20 @@ class Http
                 $mrc = curl_multi_exec($mh, $active);
                 if (CURLM_OK == $mrc) {
                     while ($multiInfo = curl_multi_info_read($mh)) {
-                        $curl_info                        = curl_getinfo($multiInfo['handle']);
-                        $curl_error                       = curl_error($multiInfo['handle']);
-                        $curl_results                     = curl_multi_getcontent($multiInfo['handle']);
-                        $strCh                            = (string)$multiInfo['handle'];
-                        $_key                             = $responsesKeyMap[$strCh];
-                        $result                           = compact('curl_info', 'curl_error', 'curl_results');
-                        $_curlInfo                        = $result['curl_info'];
-                        $_code                            = Z::arrayGet($_curlInfo, 'http_code', 0);
-                        $_data                            = $result['curl_results'];
-                        $_info                            = explode("\r\n\r\n", $_data, 2);
-                        $this->responseInfoMulti[$_key]   = $_curlInfo;
-                        $this->responseErrorMulti[$_key]  = $result['curl_error'];
+                        $curl_info = curl_getinfo($multiInfo['handle']);
+                        $curl_error = curl_error($multiInfo['handle']);
+                        $curl_results = curl_multi_getcontent($multiInfo['handle']);
+                        $strCh = (string)$multiInfo['handle'];
+                        $_key = $responsesKeyMap[$strCh];
+                        $result = compact('curl_info', 'curl_error', 'curl_results');
+                        $_curlInfo = $result['curl_info'];
+                        $_code = Z::arrayGet($_curlInfo, 'http_code', 0);
+                        $_data = $result['curl_results'];
+                        $_info = explode("\r\n\r\n", $_data, 2);
+                        $this->responseInfoMulti[$_key] = $_curlInfo;
+                        $this->responseErrorMulti[$_key] = $result['curl_error'];
                         $this->responseHeaderMulti[$_key] = Z::arrayGet($_info, 0, '');
-                        $arrResponses[$_key]              = Z::arrayGet($_info, 1, '');
+                        $arrResponses[$_key] = Z::arrayGet($_info, 1, '');
                         curl_multi_remove_handle($mh, $multiInfo['handle']);
                         curl_close($multiInfo['handle']);
                     }
@@ -673,7 +672,7 @@ class Http
 
     public function cookie()
     {
-        $cookie  = $this->_cookie;
+        $cookie = $this->_cookie;
         $cookies = [];
         if (!$cookie) {
             $cookie = file_exists($this->cookiePath) ? file($this->cookiePath) : [];
@@ -710,7 +709,7 @@ class Http
      * 那么请求的时候发送的cookie是name=123,请求完成后恢复name=snail，如果再次请求那么发送的cookie中name=snail.
      *
      * @param string|array $key cookie的key，也可以是一个键值对数组一次设置多个cookie，此时不需要第二个参数
-     * @param string       $val cookie的value
+     * @param string $val cookie的value
      *
      * @return \Zls\Action\Http
      */
@@ -724,7 +723,7 @@ class Http
             }
         } else {
             $this->_cookie[$key] = urlencode($val);
-            $cookies[]           = ' ' . $key . '=' . urlencode($val);
+            $cookies[] = ' ' . $key . '=' . urlencode($val);
         }
         if (!empty($cookies)) {
             curl_setopt($this->ch, CURLOPT_COOKIE, implode(';', $cookies));
