@@ -633,7 +633,7 @@ class Http
         $active = null;
         do {
             $mrc = curl_multi_exec($mh, $active);
-        } while (0 === $usleep || (CURLM_CALL_MULTI_PERFORM == $mrc));
+        } while (0 === $usleep && !in_array($mrc,[CURLM_OK,CURLM_CALL_MULTI_PERFORM],true));
         if (0 === $usleep) {
             return true;
         }
