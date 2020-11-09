@@ -52,8 +52,8 @@ class FileUp
     public function saveFile($saveName = null, $dir = null, $batch = null)
     {
         $this->save_name = $saveName;
-        $this->dir       = $dir;
-        $files           = Z::filesGet($this->fileFormfieldName);
+        $this->dir = $dir;
+        $files = Z::filesGet($this->fileFormfieldName);
         if (is_null($files)) {
             $this->setError(404, '请先上传文件');
 
@@ -65,18 +65,18 @@ class FileUp
 
             return false;
         }
-        $tmpName     = null;
+        $tmpName = null;
         $newSaveName = null;
         if ($isBatchUpload) {
             foreach ($files['name'] as $k => $file) {
                 $file = [
-                    'name'     => $files['name'][$k],
-                    'error'    => $files['error'][$k],
+                    'name' => $files['name'][$k],
+                    'error' => $files['error'][$k],
                     'tmp_name' => $files['tmp_name'][$k],
-                    'size'     => $files['size'][$k],
-                    'type'     => $files['type'][$k],
+                    'size' => $files['size'][$k],
+                    'type' => $files['type'][$k],
                 ];
-                $ext  = $this->getFileExt($file) ?: $this->type;
+                $ext = $this->getFileExt($file) ?: $this->type;
                 if ($_tmp_name = $this->checkFile(
                     $file
                 )
@@ -89,7 +89,7 @@ class FileUp
             }
         } else {
             $file = $files;
-            $ext  = $this->getFileExt($file) ?: $this->type;
+            $ext = $this->getFileExt($file) ?: $this->type;
             if ($_tmp_name = $this->checkFile($file)) {
                 $tmpName = $_tmp_name;
             } else {
@@ -103,7 +103,7 @@ class FileUp
 
     private function setError($code, $info)
     {
-        $this->error['code']  = $code;
+        $this->error['code'] = $code;
         $this->error['error'] = $info;
     }
 
@@ -158,7 +158,7 @@ class FileUp
 
     private function checkSize($file)
     {
-        $max_size   = $this->size;
+        $max_size = $this->size;
         $size_range = 1024 * $max_size;
         if ($file['size'] > $size_range) {
             $this->setError(
@@ -182,20 +182,20 @@ class FileUp
             $res = [];
             foreach ($saveName as $k => $v) {
                 $save_name = $v;
-                $src_file  = $file[$k]['tmp_name'];
+                $src_file = $file[$k]['tmp_name'];
                 if (empty($save_name)) {
-                    $file_ext  = strtolower(pathinfo($file[$k]['name'], PATHINFO_EXTENSION));
+                    $file_ext = strtolower(pathinfo($file[$k]['name'], PATHINFO_EXTENSION));
                     $save_name = md5(sha1_file($src_file)) . '.' . $file_ext;
                 }
                 if (!empty($dir)) {
                     $subfix = $dir[strlen($dir) - 1];
-                    $_dir   = ('/' == $subfix || '\\' == $subfix ? $dir : $dir . '/');
-                    $dir    = pathinfo($_dir . $save_name, PATHINFO_DIRNAME);
+                    $_dir = ('/' == $subfix || '\\' == $subfix ? $dir : $dir . '/');
+                    $dir = pathinfo($_dir . $save_name, PATHINFO_DIRNAME);
                 } else {
                     $dir = pathinfo($save_name, PATHINFO_DIRNAME);
                 }
                 $save_name = z::realPathMkdir($dir, true, false, true) . $save_name;
-                @move_uploaded_file($src_file, $save_name);
+                $this->move($src_file, $save_name);
                 if (file_exists($save_name)) {
                     $res[] = $save_name;
                 } else {
@@ -214,14 +214,14 @@ class FileUp
             }
             if (!empty($dir)) {
                 $subfix = $dir[strlen($dir) - 1];
-                $_dir   = ('/' == $subfix || '\\' == $subfix ? $dir : $dir . '/');
-                $dir    = pathinfo($_dir . $saveName, PATHINFO_DIRNAME);
+                $_dir = ('/' == $subfix || '\\' == $subfix ? $dir : $dir . '/');
+                $dir = pathinfo($_dir . $saveName, PATHINFO_DIRNAME);
             } else {
                 $dir = pathinfo($saveName, PATHINFO_DIRNAME);
             }
             //$rs = $dir . '/' . $_save_name;
             $saveName = z::realPathMkdir($dir, true, false, true) . $saveName;
-            @move_uploaded_file($src_file, $saveName);
+            $this->move($src_file, $saveName);
             if (file_exists($saveName)) {
                 return $saveName; //$this->truepath($save_name);
             } else {
@@ -229,6 +229,16 @@ class FileUp
 
                 return false;
             }
+        }
+    }
+
+    private function move($s, $d)
+    {
+        if (!file_exists($s)) {
+            return;
+        }
+        if (!@move_uploaded_file($s, $d)) {
+            @copy($s, $d);
         }
     }
 
@@ -266,8 +276,8 @@ class FileUp
         if (false === strpos($path, ':') && strlen($path) && '/' != $path[0]) {
             $path = getcwd() . DIRECTORY_SEPARATOR . $path;
         }
-        $path      = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
-        $parts     = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
+        $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
+        $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
         $absolutes = [];
         foreach ($parts as $part) {
             if ('.' == $part) {
