@@ -1,16 +1,12 @@
 <?php
 /**
- * zip.
- *
- * @author 影浅-Seekwe
- *
- * @see   seekwe@gmail.com
- * @since  0.0.1
+ * 文件解压
  */
 
 namespace Zls\Action;
 
 use Z;
+use ZipArchive;
 
 class Zip
 {
@@ -24,57 +20,59 @@ class Zip
      * @param      $filename
      * @param      $path
      * @param null $fn
-     * @param bool $del
-     * @param int  $maxSize
+     * @param bool $autoEmpty 清空解压目录
+     * @param int $maxSize
      *
      * @return array|bool
      */
-    public function unzip($filename, $path, $fn = null, $del = true, $maxSize = 6291456)
+    public function unzip($filename, $path, $fn = null, $autoEmpty = true, $maxSize = 6291456)
     {
-        $errorMsg = [];
         if (file_exists($filename)) {
+            $errorMsg = [];
             $starttime = explode(' ', microtime());
-            if (true === $del) {
-                z::rmdir($path, false);
+            if (true === $autoEmpty) {
+                Z::rmdir($path, false);
             }
-            /*将文件名和路径转成windows系统默认的gb2312编码，否则将会读取不到*/
             $filename = iconv('utf-8', 'gb2312', $filename);
             $path = iconv('utf-8', 'gb2312', $path);
             $resource = zip_open($filename);
-            while ($dir_resource = zip_read($resource)) {
-                if (zip_entry_open($resource, $dir_resource)) {
-                    $file_name = $path.zip_entry_name($dir_resource);
-                    /*以最后一个“/”分割,再用字符串截取出路径部分*/
-                    $file_path = substr($file_name, 0, strrpos($file_name, '/'));
-                    if (!is_dir($file_path)) {
-                        mkdir($file_path, 0777, true);
-                    }
-                    if (!is_dir($file_name)) {
-                        $file_size = zip_entry_filesize($dir_resource);
-                        /*如果文件过大，跳过解压，继续下一个*/
-                        if ($file_size < $maxSize) {
-                            $file_content = zip_entry_read($dir_resource, $file_size);
+            while ($dirResource = zip_read($resource)) {
+                if (zip_entry_open($resource, $dirResource)) {
+                    $zipFileName = zip_entry_name($dirResource);
+                    $fileName = $path . $zipFileName;
+                    if (!is_dir($fileName)) {
+                        $fileSize = zip_entry_filesize($dirResource);
+                        if ($fileSize < $maxSize) {
+                            $fileContent = null;
+                            $getContent = function () use ($dirResource, $fileSize) {
+                                return zip_entry_read($dirResource, $fileSize);
+                            };
                             if ($fn instanceof \Closure) {
-                                $file_content = $fn($file_name, $file_content);
+                                $fileContent = $fn($zipFileName, $getContent);
+                                if (is_bool($fileContent) && !$fileContent) {
+                                    $errorMsg[iconv('gb2312', 'utf-8', $fileName)] = '此文件已被跳过，原因：业务过滤';
+                                    continue;
+                                }
                             }
-                            file_put_contents($file_name, $file_content);
+                            if (is_null($fileContent))
+                                $fileContent = $getContent();
+                            $filePath = substr($fileName, 0, strrpos($fileName, '/'));
+                            if (!is_dir($filePath)) {
+                                @mkdir($filePath, 0777, true);
+                            }
+                            file_put_contents($fileName, $fileContent);
                         } else {
-                            $errorMsg[iconv('gb2312', 'utf-8', $file_name)] = '此文件已被跳过，原因：文件过大';
+                            $errorMsg[iconv('gb2312', 'utf-8', $fileName)] = '此文件已被跳过，原因：文件过大';
                         }
                     }
-                    zip_entry_close($dir_resource);
+                    zip_entry_close($dirResource);
                 }
             }
             zip_close($resource);
             $endtime = explode(' ', microtime());
-            $thistime = $endtime[0] + $endtime[1] - ($starttime[0] + $starttime[1]);
-            $thistime = round($thistime, 3);
-
-            return ['thistime' => $thistime];
-        } else {
-            $this->setError(404, '文件 '.$filename.' 不存在');
+            return ['thistime' => round($endtime[0] + $endtime[1] - ($starttime[0] + $starttime[1]), 3), 'err' => $errorMsg];
         }
-
+        $this->setError(404, '文件 ' . $filename . ' 不存在');
         return false;
     }
 
@@ -82,7 +80,7 @@ class Zip
      * @param $code
      * @param $msg
      */
-    public function setError($code, $msg)
+    private function setError($code, $msg)
     {
         $this->errorCode = $code;
         $this->errorMsg = $msg;
@@ -93,20 +91,19 @@ class Zip
      *
      * @param        $path
      * @param        $save
-     * @param null   $manage
-     * @param bool   $overwrite 覆盖
+     * @param null $manage
+     * @param bool $overwrite 覆盖
      * @param string $prefix
-     * @param array  $include
-     * @param bool   $debug
+     * @param array $include
+     * @param bool $debug
      *
-     * @return bool
+     * @return array
      *
      * @internal param null $ignoreFn
      */
     public function zip($path, $save, $manage = null, $overwrite = false, $prefix = '', $include = [], $debug = false)
     {
         $files = [];
-        /** @var \ZipArchive $zip */
         $zip = $this->getZip($save, $overwrite);
         $this->initFilesList($path, $files);
         foreach ($files as $file) {
@@ -127,7 +124,7 @@ class Zip
             foreach ($include as $v) {
                 $localname = str_replace($path, $prefix, $v);
                 $localname = ltrim($localname, '/');
-                $zip->addFile(z::realPath('../'.$v), $localname);
+                $zip->addFile(z::realPath('../' . $v), $localname);
             }
         }
         $res = $save;
@@ -138,7 +135,6 @@ class Zip
             }
             $res = $debug;
         }
-        /*关闭处理的zip文件*/
         $zip->close();
 
         return $res;
@@ -148,15 +144,15 @@ class Zip
      * @param $save
      * @param $overwrite
      *
-     * @return \ZipArchive
+     * @return ZipArchive
      */
     public function getZip($save, $overwrite)
     {
-        /** @var \ZipArchive $zip */
-        $zip = new \ZipArchive();
+        Z::throwIf(!class_exists('ZipArchive'), 500, 'please start the php zip extension first');
+        $zip = new ZipArchive();
         $this->saveFile = $save;
-        $zipState = $zip->open($save, $overwrite ? \ZIPARCHIVE::OVERWRITE : \ZIPARCHIVE::CREATE);
-        z::throwIf(true !== $zipState, 500, 'open [ '.$save.' ] error, '.$this->errorMessage($zipState));
+        $zipState = $zip->open($save, $overwrite ? ZIPARCHIVE::OVERWRITE : ZIPARCHIVE::CREATE);
+        Z::throwIf(true !== $zipState, 500, 'open [ ' . $save . ' ] error, ' . $this->errorMessage($zipState));
 
         return $zip;
     }
@@ -213,7 +209,7 @@ class Zip
             case 23:
                 return 'Entry has been deleted';
             default:
-                return 'An unknown error has occurred('.intval($code).')';
+                return 'An unknown error has occurred(' . intval($code) . ')';
         }
     }
 
@@ -225,40 +221,31 @@ class Zip
      */
     private function initFilesList($path, &$file)
     {
-        /*打开当前文件夹由$path指定。*/
         $handler = opendir($path);
         while (false !== ($filename = readdir($handler))) {
-            /*文件夹文件名字为'.'和‘..’，不要对他们进行操作*/
             if ('.' != $filename && '..' != $filename) {
-                /*如果读取的某个对象是文件夹，则递归*/
-                if (is_dir($path.'/'.$filename)) {
-                    $this->initFilesList($path.'/'.$filename, $file);
+                if (is_dir($path . '/' . $filename)) {
+                    $this->initFilesList($path . '/' . $filename, $file);
                 } else {
-                    /*将文件加入zip对象*/
-                    $file[] = $path.'/'.$filename;
+                    $file[] = $path . '/' . $filename;
                 }
             }
         }
         closedir($handler);
     }
 
-    /**
-     * 下载压缩包.
-     *
-     * @param string $filename
-     */
     public function download($filename = '')
     {
         if (!$filename) {
             $filename = $this->saveFile;
         }
-        z::header('Cache-Control: public');
-        z::header('Content-Description: File Transfer');
-        z::header('Content-disposition: attachment; filename='.basename($filename));
-        z::header('Content-Type: application/zip');
-        z::header('Content-Transfer-Encoding: binary');
-        z::header('Content-Length: '.filesize($filename));
-        @readfile($filename);
+        Z::header('Cache-Control: public');
+        Z::header('Content-Description: File Transfer');
+        Z::header('Content-disposition: attachment; filename=' . basename($filename));
+        Z::header('Content-Type: application/zip');
+        Z::header('Content-Transfer-Encoding: binary');
+        Z::header('Content-Length: ' . filesize($filename));
+        return readfile($filename) != false;
     }
 
     /**
@@ -267,5 +254,12 @@ class Zip
     public function getError()
     {
         return ['code' => $this->errorCode, 'msg' => $this->errorMsg];
+    }
+
+    public function pathMatche($path, $rule)
+    {
+        $matches = str_replace('*', '(.*)', $rule);
+        $matches = str_replace('/', '\/', $matches);
+        return preg_match('/' . $matches . '/', $path);
     }
 }

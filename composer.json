@@ -15,5 +15,8 @@
       "Zls\\Action\\": "src/"
     }
   },
-  "require": {}
+  "require": {
+    "ext-zip": "*",
+    "ext-iconv": "*"
+  }
 }
