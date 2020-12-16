@@ -40,7 +40,7 @@ class Ini
                     case 'false':
                         break;
                     default:
-                        $value =  "'{$value}'";
+                        $value = '"' . addslashes($value) . '"';
                 }
                 $result[] = ($name ? $name . '[]' : $key) . " = {$value}";
             }
