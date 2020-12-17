@@ -631,19 +631,17 @@ class Http
             $responsesKeyMap[$strCh] = $urlsKey;
         }
         $active = null;
+        $isNoSleep = !$usleep;
         do {
             $mrc = curl_multi_exec($mh, $active);
-        } while (0 === $usleep && !in_array($mrc,[CURLM_OK,CURLM_CALL_MULTI_PERFORM],true));
-        if (0 === $usleep) {
-            return true;
-        }
+        } while ($isNoSleep && !in_array($mrc, [CURLM_OK, CURLM_CALL_MULTI_PERFORM], true));
         while ($active && CURLM_OK == $mrc) {
             if (-1 == curl_multi_select($mh)) {
                 usleep($usleep);
             }
             do {
                 $mrc = curl_multi_exec($mh, $active);
-                if (CURLM_OK == $mrc) {
+                if (CURLM_OK == $mrc && !$isNoSleep) {
                     while ($multiInfo = curl_multi_info_read($mh)) {
                         $curl_info = curl_getinfo($multiInfo['handle']);
                         $curl_error = curl_error($multiInfo['handle']);
@@ -663,7 +661,8 @@ class Http
                         curl_close($multiInfo['handle']);
                     }
                 }
-            } while (CURLM_CALL_MULTI_PERFORM == $mrc);
+            } while (CURLM_CALL_MULTI_PERFORM == $mrc && !$isNoSleep);
+            if ($isNoSleep) break;
         }
         curl_multi_close($mh);
         ksort($arrResponses);
