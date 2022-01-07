@@ -1,15 +1,11 @@
-<?php /** @noinspection ALL */
+<?php
+
+/** @noinspection ALL */
 
 namespace Zls\Action;
 
 /**
- * Zls\Action\StrUtils.
- * @author        影浅
- * @email         seekwe@gmail.com
- * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- * @see           ---
- * @since         v0.0.1
- * @updatetime    2018-07-13 11:55
+ * StrUtils
  */
 class StrUtils
 {
@@ -22,7 +18,7 @@ class StrUtils
      * @param string $subfix 后缀
      * @return string $id
      */
-    public function uniqueId($prefix = '', $subfix = '', $length = 16)
+    public static function uniqueId($prefix = '', $subfix = '', $length = 16)
     {
         if ($length < 14) {
             $length = 14;
@@ -57,7 +53,7 @@ class StrUtils
      * @param string $charset
      * @return string
      */
-    public function stringStar($str, $start = 1, $end = 0, $dot = '*', $charset = 'UTF-8')
+    public static function stringStar($str, $start = 1, $end = 0, $dot = '*', $charset = 'UTF-8')
     {
         $len = mb_strlen($str, $charset);
         if (0 == $start || $start > $len) {
@@ -89,9 +85,9 @@ class StrUtils
      * 随机OPENID.
      * @return string
      */
-    public function openid()
+    public static function openid()
     {
-        return 'o7nWYj' . $this->randString(22, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_');
+        return 'o7nWYj' . self::randString(22, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_');
     }
 
     /**
@@ -100,7 +96,7 @@ class StrUtils
      * @param string $chars
      * @return string
      */
-    public function randString($length = 4, $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_ []{}<>~`+=,.;:/?|')
+    public static function randString($length = 4, $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
     {
         $hash = '';
         $max = strlen($chars) - 1;
@@ -116,7 +112,7 @@ class StrUtils
      * @param $str
      * @return null|string
      */
-    public function firstCharter($str)
+    public static function firstCharter($str)
     {
         if (empty($str)) {
             return '';

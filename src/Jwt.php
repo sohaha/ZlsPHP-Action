@@ -1,6 +1,6 @@
 <?php
 
-namespace Zls\JWT;
+namespace Zls\Action;
 
 use Z;
 
@@ -24,7 +24,11 @@ class Jwt
     public static function genPayload(array $payload, int $expire = 7200): array
     {
         $now = time();
-        return array_merge($payload, ['exp' => $now + $expire, 'iat' => $now]);
+        $opt = ['iat' => $now];
+        if ($expire) {
+            $opt['exp'] = $now + $expire;
+        }
+        return array_merge($payload, $opt);
     }
 
     /**
@@ -103,7 +107,7 @@ class Jwt
                 break;
             case 'openssl':
                 $signature = self::base64UrlDecode($sign);
-                if (in_array($algo, ['ES256', 'ES384'],true)) {
+                if (in_array($algo, ['ES256', 'ES384'], true)) {
                     $signature = self::signatureToDER($signature);
                 }
                 $verify = @openssl_verify($input, $signature, $pubkey, $alg);
@@ -175,7 +179,7 @@ class Jwt
         return self::encodeDER(
             0x10,
             self::encodeDER(0x02, $r) .
-            self::encodeDER(0x02, $s)
+                self::encodeDER(0x02, $s)
         );
     }
 

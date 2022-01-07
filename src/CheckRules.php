@@ -371,13 +371,13 @@ class CheckRules {
 				return true;
 			},
 			'int' => function ($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				//整数
 				if (!Z::arrayKeyExists($key, $data)) {
 					return false;
 				}
 				$v = (array) $value;
 				foreach ($v as $value) {
 					$okay = preg_match('/^([-+]?[1-9]\d*|0)$/', $value);
+
 					if (!$okay) {
 						return false;
 					}
